@@ -18,6 +18,16 @@ Requirements that are not fully met, and why. Nothing here was silently dropped.
   feeder services. The modelled routes are therefore overloaded at rail feeder stops in the peaks, and
   the twin reports about 10,000 trips/day that give up. Treat bus-level numbers as illustrative.
 
+## Trip planner and depot tools
+- Step-free access and low-floor buses come from an assumption table (`config/accessibility.yaml`), not
+  surveyed station or fleet data.
+- The planner snaps the user's position to the nearest stop and adds a straight-line walk estimate; it does
+  not route along streets.
+- Only add-trips advisories are tested in the twin. Short-turn reuses that test (the twin cannot run partial
+  trips), move-a-bus estimates the quiet route's load from the forecast, and hold-for-train is untested.
+- A what-if compares one simulated day with one baseline day; hour-level differences under about 10 load-%
+  points are within that run-to-run noise, so the difference view only colours larger changes.
+
 ## Twin
 - Commuters are lightweight records driven by a dispatcher process, not one SimPy process each
   (`twin/agents.py` explains why: ~150k commuters/day must simulate in seconds). Behaviour follows

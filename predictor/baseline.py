@@ -33,7 +33,7 @@ def b0_predict(p: Panel, origins: np.ndarray, horizons: np.ndarray) -> np.ndarra
     if bad.any():
         wk = p.exo.is_weekend.values
         for j, (o, h) in enumerate(zip(*np.nonzero(bad))):
-            t = origins[o] + horizons[h]
+            t = min(origins[o] + horizons[h], len(wk) - 1)   # targets past the panel end are never scored
             same = np.arange(t % SLOTS_PER_DAY, origins[o] + 1, SLOTS_PER_DAY)
             same = same[wk[same] == wk[t]] if len(same) else same
             out[:, o, h] = lf_f[:, same].mean(axis=1) if len(same) else 0.0

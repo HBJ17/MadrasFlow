@@ -120,6 +120,12 @@ def main() -> int:
         step("GET /history", lambda: _expect(len(g("/history", params={"stop_id": "MRTS_VLCY", "route_id": "MRTS_BV"})["lf"]) == 96, "96 slots"))
         step("GET /wait-or-go", lambda: g("/wait-or-go", params={"stop_id": "MRTS_VLCY", "route_id": "MRTS_BV"})["suggestion"])
         step("POST /plan", lambda: f"{len(post('/plan', {'from_stop': '6693', 'to_stop': 'MRTS_VLCY'})['itineraries'])} itineraries")
+        step("GET /stops/nearest", lambda: g("/stops/nearest", params={"lat": 12.9792, "lon": 80.2205})[0]["stop_id"])
+        step("POST /plan/window", lambda: _expect(len(post("/plan/window", {"from_stop": "CMRL_26", "to_stop": "MRTS_TVMR", "window_min": 15,
+                                                                         "filters": {"women": True}})["slots"]) == 3, "3 slots"))
+        step("GET /fleet/heatmap", lambda: f"{len(g('/fleet/heatmap')['rows'])} rows")
+        step("GET /fleet/heatmap/BUS_95 stops+buses", lambda: (g("/fleet/heatmap/BUS_95", params={"view": "stops"}),
+                                                               g("/fleet/heatmap/BUS_95", params={"view": "buses"}))[0]["route"])
         step("POST /advisories/run", lambda: f"{post('/advisories/run', {})['created']} created")
         step("GET /advisories", lambda: g("/advisories"))
         step("GET /twin/scenarios", lambda: _expect(len(g("/twin/scenarios")) >= 8, "scenarios"))
@@ -135,6 +141,18 @@ def main() -> int:
             return f"rain_heavy boardings {st['summary']['scenario']['boardings_total']:,}"
 
         step("POST /twin/run + poll", twin_run)
+
+        def builder_run():
+            rid = post("/twin/run", {"scenario": "builder", "mods": {"fleet": [{"route": "BUS_95", "hour": 8, "buses": 2}]}})["run_id"]
+            for _ in range(240):
+                st = g(f"/twin/run/{rid}")
+                if st["status"] in ("done", "error"):
+                    break
+                time.sleep(1)
+            assert st["status"] == "done" and st["summary"]["fleet"]["bus_hours"] == 2, st
+            return f"fleet-only plan: {st['summary']['fleet']['trips_added']} trips added"
+
+        step("POST /twin/run builder (fleet only)", builder_run)
         step("POST /twin/whatif", lambda: f"{len(post('/twin/whatif', {'extra_trips': [{'route': 'BUS_95', 'direction': 0, 'start': '08:00', 'end': '09:30', 'n': 2}]})['table'])} rows")
         step("GET /accuracy", lambda: g("/accuracy"))
         step("GET /impact (404 until computed)", lambda: requests.get(base + "/impact", timeout=10).status_code in (200, 404) or (_ for _ in ()).throw(RuntimeError("bad status")))

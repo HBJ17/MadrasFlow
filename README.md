@@ -54,8 +54,8 @@ Docker alternative: `docker compose up --build` (first start prepares data insid
 | 6 | `python -m twin.generate --days 90 --verify` | 90 days in ~90 s on 16 cores, parquet + DB, same seed ⇒ identical |
 | 7 | `python -m predictor.evaluate` | `models/lstm_v1.pt`, `models/prophet_v1.pkl`, `reports/forecast_eval.md` |
 | 8 | `python -m predictor.serve` (also every 5 min in the API) | rows in `forecast`; `/occupancy/*`, `/forecast`, `/history`, `/wait-or-go` |
-| 9 | `POST /api/v1/plan` | up to 4 itineraries labelled fastest / least crowded / balanced |
-| 10 | `python -m advisory.headway`, `python -m advisory.impact` | advisories verified by twin what-if; `reports/impact_summary.md` |
+| 9 | `POST /api/v1/plan/window` (`/plan` for a single time) | ranked itineraries for every 15-min slot in depart ± window, with filters (modes, walk, fare, transfers, step-free, women's travel) and ranking (crowd + arrival by default); `GET /stops/nearest` turns GPS into a stop |
+| 10 | `python -m advisory.headway`, `python -m advisory.impact` | add-trips advisories verified by twin what-if, plus short-turn, move-a-bus and hold-for-train rules; `GET /fleet/heatmap[/{route}?view=stops\|buses]`; `POST /twin/run` with `scenario: builder`; `reports/impact_summary.md` |
 | 11–12 | `cd web && npm install && npm run build` | PWA in `web/dist` (served by FastAPI) |
 | 13 | `python -m camera.vehicle_node …`, `python -m camera.accuracy` | counts posted to `/ingest/events`; `reports/camera_accuracy.md` |
 
@@ -95,6 +95,14 @@ GTFS + weather + holidays + events          camera nodes (stop, vehicle) — cou
   the demand load factor `(onboard + left behind) / capacity`. The LSTM sees 6 h of history and
   predicts 3 h (12 slots) as q10/q50/q90. The API only reads forecast rows; models never run inside
   a request.
+- **Trip planner** (`routing/window.py`, `/plan`): from the user's location (nearest stop) or a typed stop, every
+  15-minute departure in a ± window is planned; results show one card per slot with ranked routes (crowd level,
+  arrival, fare, transfers, walking) and the chosen route on a crowd-coloured map. Filters and ranking criteria
+  re-plan automatically; accessibility and fare-concession rules are in `config/accessibility.yaml`.
+- **Depot tools** (`/depot`): fleet heatmap with drill-down by stop and by bus; recommendations read from the
+  heatmap (add trips, short-turn, move a bus, hold for train); a what-if simulator whose conditions panel (day,
+  weather, events, disruptions, demand) and fleet plan panel (extra buses per route and hour) can run alone or
+  together, with before / after / difference heatmaps and saved plans to compare.
 - **Camera pipeline**: YOLOv8n + ByteTrack, a counting line at the door (vehicle node) and a waiting
   zone (stop node). The two nodes never talk to each other or to the twin; the backend joins them by
   `stop_id` + time (±60 s) and estimates left-behind when the vehicle leaves ≥ 90 % full.

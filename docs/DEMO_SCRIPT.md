@@ -16,19 +16,22 @@ feed the same pipeline."
    bus, its ETA and the forecast level with a load %. Toggle **Now / In 30 min / In 1 h**.
 2. Tap a red stop → **Next departures** and the **Wait or go?** hint
    ("Next bus in 3 min is CROWDED; the one after in 11 min is MEDIUM. Worth waiting 8 min.").
-3. **Plan a trip**: Tambaram West Bus Stand → Thiruvanmiyur. Three cards: Fastest, Least crowded,
-   Balanced; expand one to see per-leg crowd bars. Tick **Prefer less crowded** (seniors, women
-   travelling alone, luggage) and plan again.
-4. Toggle **தமிழ்** to show Tamil labels. Mention: text + colour by default, the map only loads on
-   "Show map", works offline with a "Last updated" banner, initial JS ~55 KB.
+3. **Plan a trip**: From defaults to your location (or type Airport); To: Thiruvanmiyur; leave 08:30,
+   window **± 15** (tap + for ± 30). Swipe between the 08:15 / 08:30 / 08:45 cards; each lists routes
+   ranked by crowd and arrival with Low / Medium / High / Crowded, arrival time, fare and transfers.
+   Tap the top one: the map draws it coloured by crowding.
+4. **Filters**: untick Bus, or turn on *Women's travel* (bus legs show ₹0) or *Step-free stations*;
+   the cards re-rank by themselves. Untick *Crowd* under Rank by to see the fastest-first order.
+5. Toggle **தமிழ்** to show Tamil labels. Mention: works offline with a "Last updated" banner.
 
 ## 3. Depot dashboard (2 min)
-1. **Fleet heatmap**: routes × next 12 slots, coloured by forecast load factor.
-2. **Advisories**: "forecast LF 1.24 at Medavakkam for 45 min → add 3 trips 08:00–09:00". The twin
-   already tested it: LF before → after, neighbouring routes checked. Accept it.
-3. **Scenario panel**: choose *Heavy rain* → Run twin (~30 s) → before/after charts of load factor,
-   left-behind passengers and CROWDED vehicle-stops. Then *Cyclone day* (MRTS halted, a quarter of buses
-   off the road, as in Cyclone Michaung) to show riders shifting to metro, and *Extra trips* on route 95 in the peak.
+1. **Fleet heatmap**: routes × next 3 hours. Click *95 → Thiruvanmiyur*: **By stop** shows where along the
+   route it fills; **By bus** shows each scheduled bus filling up stop by stop.
+2. **Recommendations**: filter by kind. An *Add trips* card is twin-tested (before → after); a *Short-turn*
+   or *Hold for train* (Guindy) card explains why it was suggested and that it is an estimate. Accept one.
+3. **What-if simulator**: tap *Peak boost on 95* (fleet only) → Run (~40 s) → the difference heatmap and
+   the cost in bus-hours; *Save to compare*. Clear the fleet, tap *Monsoon morning* (conditions only) → Run
+   → Save. The saved-plans table compares the two. Then try *Cyclone day* together with extra buses.
 4. **Impact**: computed reduction in CROWDED vehicle-stops and left-behind passengers if advisories are
    followed, and the extra bus-hours it costs.
 
