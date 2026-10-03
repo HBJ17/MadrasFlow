@@ -1,0 +1,9 @@
+.venv
+web/node_modules
+web/dist
+data/raw
+data/processed
+data/*.db*
+data/smoke
+**/__pycache__
+.pytest_cache
