@@ -1,58 +1,18 @@
 // Operator dashboard: fleet heatmap, advisories, scenario panel (twin what-if), data health, impact.
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { getJSON, hhmm, levelOf, postJSON, usePolling, type RouteInfo } from '../api'
-import { LevelChip, SimBadge } from '../components'
+import { getJSON, hhmm, postJSON, usePolling, type RouteInfo } from '../api'
+import { SimBadge } from '../components'
+import Advisories from './depot/Advisories'
 import Heatmap from './depot/Heatmap'
 import { CHART as C, Panel } from './depot/ui'
 
-interface Advisory {
-  advisory_id: number; route: string; route_id: string; direction: number; depot: string; slot_start: string; slot_end: string
-  reason: string; action: string; extra_trips: number; expected_lf_before: number | null; expected_lf_after: number | null
-  neighbour_lf_after: number | null; extra_vehicle_hours: number | null; status: string; created_at: string
-}
 interface Health {
   now: string; last_event_ts: string | null; sources: Record<string, number>; data_source: string; last_forecast_at: string | null
   forecast_rows: number; camera_nodes: { node_id: string; last_seen: string; fps: number | null; kind: string | null }[]
   camera_recent?: { ts: string; source: string; stop_id: string; vehicle_id: string | null; boardings: number; alightings: number; onboard_load: number | null; waiting_count: number | null }[]
 }
 interface Scenario { id: string; label: string; params: Record<string, unknown> }
-
-function Advisories() {
-  const a = usePolling<{ advisories: Advisory[]; data_source: 'twin' | 'camera' | 'mixed' }>('/advisories?status=active,accepted,rejected_by_whatif', 30_000)
-  const [busy, setBusy] = useState(false)
-  const act = async (id: number, action: 'accept' | 'dismiss') => { await postJSON(`/advisories/${id}/${action}`, {}); a.reload() }
-  const runNow = async () => { setBusy(true); try { await postJSON('/advisories/run', {}) } finally { setBusy(false); a.reload() } }
-  const list = a.data?.advisories ?? []
-  return (
-    <Panel title="Depot advisories" right={<button className="btn-ghost text-sm" disabled={busy} onClick={runNow}>{busy ? 'Testing in twin…' : 'Detect now'}</button>}>
-      {!list.length ? <p className="text-sm text-slate-600 dark:text-slate-400">No overload predicted in the next 3 hours.</p> : null}
-      <ul className="grid gap-3 md:grid-cols-2">
-        {list.map((x) => (
-          <li key={x.advisory_id} className={`rounded-xl p-3 ring-1 ${x.status === 'accepted' ? 'ring-teal-600' : x.status === 'rejected_by_whatif' ? 'ring-slate-300 opacity-70' : 'ring-amber-400'}`}>
-            <div className="flex items-center justify-between gap-2">
-              <b>{x.route} · dir {x.direction} · {x.depot} depot</b>
-              <span className="text-xs uppercase">{x.status.replace(/_/g, ' ')}</span>
-            </div>
-            <p className="text-sm">{hhmm(x.slot_start)}–{hhmm(x.slot_end)} · {x.reason}</p>
-            <p className="font-medium">➜ {x.action}</p>
-            <p className="flex flex-wrap items-center gap-2 text-sm">
-              Twin what-if: <LevelChip level={levelOf(x.expected_lf_before)} lf={x.expected_lf_before} size="md" /> → <LevelChip level={levelOf(x.expected_lf_after)} lf={x.expected_lf_after} size="md" />
-              {x.neighbour_lf_after != null ? <span className="text-xs text-slate-600 dark:text-slate-400">neighbours ≤ {Math.round(x.neighbour_lf_after * 100)}%</span> : null}
-              {x.extra_vehicle_hours != null ? <span className="text-xs text-slate-600 dark:text-slate-400">· +{x.extra_vehicle_hours} vehicle-h</span> : null}
-            </p>
-            {x.status === 'active' ? (
-              <div className="mt-2 flex gap-2">
-                <button className="btn-primary text-sm" onClick={() => act(x.advisory_id, 'accept')}>Accept</button>
-                <button className="btn-ghost text-sm" onClick={() => act(x.advisory_id, 'dismiss')}>Dismiss</button>
-              </div>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-    </Panel>
-  )
-}
 
 interface RunResult {
   status: string; error?: string
