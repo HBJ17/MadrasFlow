@@ -36,6 +36,14 @@ def test_extra_trips_lower_load():
     more, _ = run(scenario="extra_trips", start_date="2026-09-15", days=1, seed=4, workers=1, use_calendar=False,
                   mods={"extra_trips": xt})
     m = lambda e: e[(e.route_id == "BUS_95") & (e.direction == 0) & e.ts.dt.hour.between(7, 10)]  # noqa: E731
-    lf = lambda e: ((e.onboard_load + e.left_behind) / 70).mean()  # noqa: E731
+    lf = lambda e: ((e.onboard_load + e.left_behind) / 83).mean()  # noqa: E731
     assert lf(m(more)) < lf(m(base))
     assert m(more).trip_id.nunique() > m(base).trip_id.nunique()
+
+
+def test_cyclone_halts_mrts_and_thins_buses():
+    base, _ = run(start_date="2026-09-15", days=1, seed=4, workers=1, use_calendar=False)
+    cy, _ = run(scenario="cyclone", start_date="2026-09-15", days=1, seed=4, workers=1, use_calendar=False)
+    assert not cy.route_id.str.startswith("MRTS").any()
+    bus_trips = lambda e: e[e.route_id.str.startswith("BUS")].trip_id.nunique()  # noqa: E731
+    assert bus_trips(cy) < 0.85 * bus_trips(base)

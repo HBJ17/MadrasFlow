@@ -27,6 +27,17 @@ metro_disruption:
   modes: [metro]
   headway_mult: 2.0
   window: ["08:30", "10:00"]
+cyclone:
+  label: Cyclone day (Michaung-style)
+  # Pattern from Cyclone Michaung (Dec 2023): MTC suspended 1,000+ of ~3,861 buses, MRTS halted,
+  # metro the only reliable mode; heavy rain adds 20-50 min to bus journeys (press reports).
+  suspend_modes: [mrts]
+  headway_mult: {bus: 1.35}         # ~26% of buses off the road (1,000 / 3,861)
+  window: ["04:30", "23:30"]
+  day_total_mult: 0.75              # ASSUMPTION: many people stay home or work from home
+  demand_mult: {bus: 1.0, metro: 1.25, mrts: 1.0}   # ASSUMPTION: riders lean on metro
+  run_time_mult: 1.5                # ASSUMPTION: +20-50 min on a ~60-90 min bus journey
+  dispatch_delay_mult: {bus: 2.0}   # ASSUMPTION
 extra_trips:
   label: Extra trips (what-if)
   extra_trips: []                  # [{route: BUS_95, direction: 0, start: "08:00", end: "09:30", n: 2}]

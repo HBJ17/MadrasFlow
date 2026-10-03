@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from common.config import REPORTS_DIR, crowd_level, demand_config, load_yaml  # noqa: E402
+from common.config import REPORTS_DIR, crowd_level, demand_config, load_yaml, peak_hours  # noqa: E402
 from twin.network import load_network  # noqa: E402
 from twin.simulate import run  # noqa: E402
 from twin.calibrate import service_date  # noqa: E402
@@ -61,8 +61,9 @@ def main():
     ev_x, s_x = run(scenario="extra_trips", start_date=WEEKDAY0, days=1, seed=101, use_calendar=False,
                     mods={"extra_trips": xt})
     ev_dis, s_dis = run(scenario="metro_disruption", start_date=WEEKDAY0, days=1, seed=101, use_calendar=False)
+    ev_cy, s_cy = run(scenario="cyclone", start_date=WEEKDAY0, days=1, seed=101, use_calendar=False)
 
-    all_ev = pd.concat([ev_wk, ev_we, ev_ev, ev_rain, ev_x, ev_dis])
+    all_ev = pd.concat([ev_wk, ev_we, ev_ev, ev_rain, ev_x, ev_dis, ev_cy])
     cons = check_conservation(all_ev, cap)
 
     n_wd = service_date(ev_wk).nunique()
@@ -74,7 +75,7 @@ def main():
     ratio = wd_total / we_total
     ev_ratio = ev_ev.boardings.sum() / base1.boardings.sum()
     h = ev_wk.ts.dt.hour
-    peak_share = ev_wk.boardings[h.between(8, 9) | h.between(17, 19)].sum() / ev_wk.boardings.sum()
+    peak_share = ev_wk.boardings[h.isin(peak_hours())].sum() / ev_wk.boardings.sum()
 
     def lf(e, route=None):
         x = e if route is None else e[e.route_id == route]
@@ -87,6 +88,15 @@ def main():
     x_lb_before, x_lb_after = base1[x_mask(base1)].left_behind.sum(), ev_x[x_mask(ev_x)].left_behind.sum()
     metro_win = lambda e: e[(e.route_id.map(modes) == "metro") & e.ts.dt.hour.between(8, 9)]  # noqa: E731
     dis_lf = (lf(metro_win(ev_dis)).mean(), lf(metro_win(base1)).mean())
+    metro_b = lambda e: e[e.route_id.map(modes) == "metro"].boardings.sum()  # noqa: E731
+    cy_mrts = int((ev_cy.route_id.map(modes) == "mrts").sum())
+    cy_metro = metro_b(ev_cy) / max(1, metro_b(base1))
+
+    # MRTS station checks (reported, not fitted)
+    mrts = ev_wk[ev_wk.route_id.map(modes) == "mrts"]
+    foot = (mrts.groupby("stop_id").boardings.sum() + mrts.groupby("stop_id").alightings.sum()) / n_wd
+    top3 = tc["mrts_top3_share"]
+    top3_sim = mrts[mrts.stop_id.isin(top3["stations"])].boardings.sum() / max(1, mrts.boardings.sum())
 
     checks = [
         ("Load conservation (load_after = load_before + boardings - alightings)", cons["conservation_violations"] == 0,
@@ -108,6 +118,9 @@ def main():
          f"BUS_95 peak mean LF {x_lf_before:.3f} -> {x_lf_after:.3f}; left-behind {x_lb_before:,} -> {x_lb_after:,}"),
         ("Scenario direction: metro disruption raises metro load in the window", dis_lf[0] > dis_lf[1],
          f"metro 08-10 mean LF {dis_lf[1]:.3f} -> {dis_lf[0]:.3f}"),
+        ("Scenario direction: cyclone halts MRTS; metro loses less than the 25% day-total cut",
+         cy_mrts == 0 and cy_metro > 0.75,
+         f"MRTS vehicle-stops {cy_mrts}; metro boardings x{cy_metro:.2f} (day total x0.75)"),
     ]
 
     # ---------------- figures
@@ -126,7 +139,7 @@ def main():
     plt.close(fig)
 
     r0 = base1[(base1.route_id == "BUS_95") & (base1.direction == 0)].copy()
-    r0["lf"] = r0.onboard_load / 70
+    r0["lf"] = r0.onboard_load / cap["BUS_95"]
     seq = net.route_stops("BUS_95", 0)
     names = seq.stop_id.map(net.stops.set_index("stop_id").name).values
     r0["seq"] = r0.stop_id.map(dict(zip(seq.stop_id, seq.seq)))
@@ -164,7 +177,7 @@ def main():
         f"Generated {datetime.now():%Y-%m-%d %H:%M} by `python -m twin.validate`. **All figures are simulated data.**",
         "",
         f"Runs: 7 weekdays from {WEEKDAY0} (5 used) + 2 weekend days, calendar effects off; plus one day each of "
-        "`cricket_match`, `rain_heavy`, `extra_trips` (6 extra trips per direction on route 95 in peaks) and "
+        "`cricket_match`, `rain_heavy`, `extra_trips` (6 extra trips per direction on route 95 in peaks), `cyclone` and "
         "`metro_disruption`, same seed as the baseline day.",
         f"Fitted parameters: `{json.dumps({k: dcfg.get(k) for k in ('base_mode', 'beta_per_km', 'peak_width_scale')})}`",
         "",
@@ -192,6 +205,18 @@ def main():
         f"Crowd-level shares over all vehicle-stops: "
         + ", ".join(f"{k} {v:.0%}" for k, v in levels.items()) + ".",
         "",
+        "## MRTS stations against published figures (reported, not fitted)",
+        "",
+        "| Check | Simulated | Published |",
+        "|---|---|---|",
+        *[f"| {sid} footfall (boardings + alightings) per weekday | {foot.get(sid, 0):,.0f} | {v:,} |"
+          for sid, v in tc["mrts_station_footfall"].items()],
+        f"| Share of MRTS boardings at {', '.join(top3['stations'])} | {top3_sim:.0%} | {top3['share']:.0%} (2012) |",
+        "",
+        "The twin only generates trips between modelled stops, so station footfall that includes riders "
+        "from outside the corridor (suburban rail at St. Thomas Mount, buses not modelled) is expected to "
+        "come out lower.",
+        "",
         "## Figures",
         "",
         "![hourly profile](figures/hourly_profile_by_stop_type.png)",
@@ -203,10 +228,11 @@ def main():
         "## Sanity check against reality",
         "",
         "No measured hourly ridership profile for these routes or stations was available to compare against "
-        "(the CMRL figures used are daily/monthly totals). The peak-hour share band (40-55%) is itself an "
-        "assumption from the spec. **No claim of a match to real hourly patterns is made.** Bus and MRTS totals "
-        "are assumptions (see ASSUMPTIONS.md); only the metro total is anchored to published figures, and only "
-        "through an assumed corridor share.",
+        f"(the CMRL figures used are daily/monthly totals). The peak-hour share band "
+        f"({tc['peak_hour_share'][0]:.0%}-{tc['peak_hour_share'][1]:.0%}) is itself an assumption. "
+        "**No claim of a match to real hourly patterns is made.** The bus total is an assumption (see "
+        "ASSUMPTIONS.md); the MRTS total uses a 2023 line-wide figure from before the March 2026 extension; the "
+        "metro total is anchored to published figures through an assumed corridor share.",
         "",
         "> A simulation twin calibrated to published ridership totals and designed to ingest real AFC and "
         "sensor feeds. Bus-level counts are assumptions until MTC data is available.",

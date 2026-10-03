@@ -12,7 +12,7 @@ import pandas as pd
 from common.config import hhmm_to_min, load_yaml
 
 SCENARIO_IDS = ["baseline", "weekend", "rain_heavy", "cricket_match", "college_reopening",
-                "metro_disruption", "extra_trips", "custom"]
+                "metro_disruption", "cyclone", "extra_trips", "custom"]
 
 
 @dataclass
@@ -25,7 +25,7 @@ class Scenario:
     day_total_mult: float = 1.0
     stop_type_mult: dict = field(default_factory=dict)
     surges: list = field(default_factory=list)       # {station, from_min, to_min, factor, kind}
-    headway_changes: list = field(default_factory=list)  # {modes, from_min, to_min, mult}
+    headway_changes: list = field(default_factory=list)  # {modes, from_min, to_min, mult}; mult=inf suspends
     extra_trips: list = field(default_factory=list)  # {route, direction, start, end, n}
     tags: list = field(default_factory=list)
 
@@ -98,6 +98,14 @@ def resolve(scenario_id: str, ctx, net, dcfg: dict, mods: dict | None = None, us
         w0, w1 = sc["window"]
         s.headway_changes.append({"modes": sc["modes"], "from_min": hhmm_to_min(w0), "to_min": hhmm_to_min(w1),
                                   "mult": sc["headway_mult"]})
+    if scenario_id == "cyclone":
+        _apply_rain(s, sc)
+        s.day_total_mult *= sc["day_total_mult"]
+        w0, w1 = (hhmm_to_min(x) for x in sc["window"])
+        for m, mult in sc["headway_mult"].items():
+            s.headway_changes.append({"modes": [m], "from_min": w0, "to_min": w1, "mult": float(mult)})
+        s.headway_changes.append({"modes": sc["suspend_modes"], "from_min": w0, "to_min": w1, "mult": float("inf")})
+        s.tags.append("cyclone")
     if sc.get("extra_trips"):
         s.extra_trips = list(sc["extra_trips"])
     if scenario_id == "custom":

@@ -75,10 +75,15 @@ class TwinSim:
         tt["extra"] = False
         for hc in self.scen.headway_changes:
             m = tt.route_id.map(self.mode).isin(hc["modes"]) & tt.start_min.between(hc["from_min"], hc["to_min"])
-            step = max(1, int(round(hc["mult"])))
+            mult = hc["mult"]
             keep = np.ones(len(tt), dtype=bool)
             for _, g in tt[m].groupby(["route_id", "direction"]):
-                drop = g.sort_values("start_min").index[1::step] if step > 1 else []
+                idx = g.sort_values("start_min").index
+                if math.isinf(mult):  # service suspended
+                    drop = idx
+                else:  # keep every mult-th trip (fractional: 1.35 keeps ~74%)
+                    i = np.arange(len(idx))
+                    drop = idx[(i > 0) & (np.floor(i / mult) == np.floor((i - 1) / mult))]
                 keep[tt.index.get_indexer(drop)] = False
             tt = tt[keep]
         rows = []
@@ -139,7 +144,10 @@ class TwinSim:
             wait = 0.0
             crowd = 0.0
             for leg in o.legs:
-                wait += 0.5 * self.headway.get((leg.route_id, leg.direction), np.full(96, 60.0))[k]
+                if (leg.route_id, leg.direction) not in self.headway:  # no service today (suspended)
+                    crowd += 30
+                    continue
+                wait += 0.5 * self.headway[(leg.route_id, leg.direction)][k]
                 lf = self.obs_lf.get((leg.route_id, leg.direction, leg.board_seq))
                 if lf is not None:
                     crowd += max(0, level_index(crowd_level(lf)) - 1)
