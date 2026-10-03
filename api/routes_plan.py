@@ -1,11 +1,11 @@
-"""/plan (multimodal trip planning) and /advisories (depot dashboard)."""
+"""/plan and /plan/window (multimodal trip planning) and /advisories (depot dashboard)."""
 from __future__ import annotations
 
 import numpy as np
 from fastapi import APIRouter, HTTPException
 from fastapi.concurrency import run_in_threadpool
 
-from api.models import PlanRequest
+from api.models import PlanRequest, PlanWindowRequest
 from db.database import execute, query
 
 router = APIRouter()
@@ -17,6 +17,18 @@ async def plan(req: PlanRequest):
 
     try:
         return await run_in_threadpool(do_plan, req.from_stop, req.to_stop, req.depart_at, req.prefer_low_crowd)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@router.post("/plan/window")
+async def plan_window(req: PlanWindowRequest):
+    """Ranked itineraries for every 15-minute departure slot in depart_at +/- window_min."""
+    from routing.window import plan_window as do_plan
+
+    try:
+        return await run_in_threadpool(do_plan, req.from_stop, req.to_stop, req.depart_at, req.window_min,
+                                       req.filters.model_dump(), req.rank_by)
     except ValueError as e:
         raise HTTPException(400, str(e))
 

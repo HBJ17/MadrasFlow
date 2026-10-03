@@ -54,6 +54,27 @@ class PlanRequest(BaseModel):
     prefer_low_crowd: bool = False
 
 
+class PlanFilters(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    modes: list[Literal["bus", "mrts", "metro"]] | None = None
+    max_walk_min: float | None = Field(default=None, ge=0, le=60)
+    max_fare: float | None = Field(default=None, ge=0, le=500)
+    max_transfers: int | None = Field(default=None, ge=0, le=2)
+    step_free: bool = False
+    women: bool = False
+    access_walk_min: float = Field(default=0, ge=0, le=60)   # walk from the user's location to the first stop
+
+
+class PlanWindowRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    from_stop: str
+    to_stop: str
+    depart_at: datetime | None = None               # centre of the window; default now
+    window_min: int = Field(default=15, ge=0, le=120, multiple_of=15)
+    filters: PlanFilters = PlanFilters()
+    rank_by: list[Literal["crowd", "eta", "cost", "walk", "transfers"]] | None = None   # None = crowd + eta
+
+
 class ExtraTrip(BaseModel):
     route: str
     direction: int | None = None
