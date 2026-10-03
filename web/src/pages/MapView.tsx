@@ -4,7 +4,7 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { usePolling, type Level, type StopInfo } from '../api'
 
-const COLORS: Record<string, string> = { LOW: '#15803d', MEDIUM: '#facc15', HIGH: '#fb923c', CROWDED: '#b91c1c' }
+const COLORS: Record<string, string> = { LOW: '#7fbf3a', MEDIUM: '#ebc247', HIGH: '#f08a3c', CROWDED: '#ba1a1a' }
 
 export default function MapView({ stops }: { stops: { id: string; name: string; level: Level | null }[] }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -28,7 +28,7 @@ export default function MapView({ stops }: { stops: { id: string; name: string; 
     const b = new maplibregl.LngLatBounds()
     pts.forEach((p) => {
       const el = document.createElement('div')
-      el.style.cssText = `width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 2px #000;background:${COLORS[p.level ?? ''] ?? '#94a3b8'}`
+      el.style.cssText = `width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,32,70,.5);background:${COLORS[p.level ?? ''] ?? '#9a9ca5'}`
       el.setAttribute('aria-label', `${p.name}: ${p.level ?? 'no forecast'}`)
       new maplibregl.Marker({ element: el }).setLngLat([p.g!.lon, p.g!.lat]).setPopup(new maplibregl.Popup().setText(`${p.name} — ${p.level ?? '–'}`)).addTo(map)
       b.extend([p.g!.lon, p.g!.lat])

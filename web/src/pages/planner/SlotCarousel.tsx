@@ -3,7 +3,7 @@
 // only (Low / Medium / High / Crowded).
 import { useEffect, useRef, useState } from 'react'
 import { hhmm, type WinItinerary, type WindowPlan } from '../../api'
-import { LevelChip, ModeIcon } from '../../components'
+import { Icon, LevelChip, ModeIcon } from '../../components'
 import { useT } from '../../i18n'
 
 export interface Selection { slot: number; idx: number }
@@ -15,21 +15,21 @@ function RouteOption({ it, selected, onSelect }: { it: WinItinerary; selected: b
   return (
     <li>
       <button type="button" aria-pressed={selected} onClick={onSelect}
-        className={`w-full rounded-xl px-3 py-3 text-left ring-1 transition ${selected ? 'bg-teal-50 ring-2 ring-brand dark:bg-teal-950/40' : 'ring-slate-200 hover:bg-slate-50 dark:ring-slate-800 dark:hover:bg-slate-800/60'}`}>
+        className={`w-full rounded-xl px-3 py-3 text-left ring-1 transition ${selected ? 'bg-teal-50 ring-2 ring-brand dark:bg-teal-950/40' : 'bg-paper ring-slate-200 hover:bg-white dark:bg-slate-950 dark:ring-white/5 dark:hover:bg-[#1f232d]'}`}>
         <div className="flex items-start justify-between gap-2">
           <span className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-bold tabular-nums dark:bg-slate-700">{it.rank}</span>
+            <span className="mr-1 inline-flex h-6 w-6 items-center justify-center rounded-md bg-slate-200 font-mono text-xs font-bold tabular-nums dark:bg-slate-700">{it.rank}</span>
             {rides.map((l, i) => (
               <span key={i} className="flex items-center gap-1">
                 {i > 0 ? <span aria-hidden className="text-slate-500">›</span> : null}
-                <ModeIcon mode={l.mode!} /><b>{l.route}</b>
+                <ModeIcon mode={l.mode!} /><b className="font-display text-[#002046] dark:text-navy-soft">{l.route}</b>
               </span>
             ))}
           </span>
           <LevelChip level={it.worst_level} size="sm" />
         </div>
         <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="text-lg font-bold tabular-nums">{t('arrive')} {hhmm(it.arrive_at)}</span>
+          <span className="font-display text-lg font-bold tabular-nums">{t('arrive')} <span className="font-mono">{hhmm(it.arrive_at)}</span></span>
           <span className="text-sm tabular-nums text-slate-600 dark:text-slate-300">{Math.round(it.total_min)} {t('min')}</span>
           <span className="text-sm tabular-nums text-slate-600 dark:text-slate-300">₹{Math.round(it.fare)}</span>
           <span className="text-sm text-slate-600 dark:text-slate-300">
@@ -38,8 +38,8 @@ function RouteOption({ it, selected, onSelect }: { it: WinItinerary; selected: b
         </div>
         {it.best_overall || notes.length ? (
           <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
-            {it.best_overall ? <span className="rounded-full bg-brand px-2 py-0.5 font-semibold text-white">★ {t('bestOverall')}</span> : null}
-            {[...new Set(notes)].map((n) => <span key={n} className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{t(n as 'low_floor')}</span>)}
+            {it.best_overall ? <span className="inline-flex items-center gap-1 rounded-md bg-lime px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-lime-ink"><Icon name="star" className="h-3 w-3" /> {t('bestOverall')}</span> : null}
+            {[...new Set(notes)].map((n) => <span key={n} className="rounded-md bg-slate-200 px-2 py-0.5 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{t(n as 'low_floor')}</span>)}
           </div>
         ) : null}
       </button>
@@ -71,10 +71,10 @@ export default function SlotCarousel({ plan, selected, onSelect }: { plan: Windo
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <button type="button" className="btn-ghost w-11 px-0" aria-label={t('prevSlot')} disabled={cur === 0} onClick={() => go(cur - 1)}>◀</button>
-        <div role="tablist" aria-label={t('leave')} className="flex flex-1 gap-1 overflow-x-auto">
+        <div role="tablist" aria-label={t('leave')} className="flex flex-1 gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1 [scrollbar-width:none] dark:bg-[#1a1d25]">
           {plan.slots.map((s, i) => (
             <button key={s.depart_at} role="tab" type="button" aria-selected={i === cur} onClick={() => go(i)}
-              className={`tap shrink-0 rounded-lg px-3 text-sm font-semibold tabular-nums ${i === cur ? 'bg-brand text-white' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}>
+              className={`tap shrink-0 rounded-lg px-3 font-mono text-sm font-semibold tabular-nums transition ${i === cur ? 'brand-fill shadow-sm' : 'text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800'}`}>
               {hhmm(s.depart_at)}
             </button>
           ))}
@@ -86,8 +86,8 @@ export default function SlotCarousel({ plan, selected, onSelect }: { plan: Windo
           <section key={s.depart_at} role="tabpanel" aria-label={`${t('leave')} ${hhmm(s.depart_at)}`} className="w-full shrink-0 snap-center px-0.5">
             <div className="card p-3">
               <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="text-lg font-semibold">{t('leave')} {hhmm(s.depart_at)}</h2>
-                <span className="text-sm text-slate-600 dark:text-slate-400">{s.itineraries.length} {t('options')}</span>
+                <h2 className="text-lg font-semibold text-[#002046] dark:text-navy-soft">{t('leave')} <span className="font-mono">{hhmm(s.depart_at)}</span></h2>
+                <span className="ledger">{s.itineraries.length} {t('options')}</span>
               </div>
               {s.itineraries.length ? (
                 <ul className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">

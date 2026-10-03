@@ -40,21 +40,21 @@ export default function LocationField({ stops, initialStop, onChange }: {
           onChange={(s) => { setPicked(s); onChange(s ? { stop_id: s.stop_id, name: s.name, walk_min: 0, gps: false } : null) }} />
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
           {msg ? <span role="status" className="text-slate-600 dark:text-slate-400">{msg}</span> : <span />}
-          <button type="button" className="tap text-brand underline-offset-4 hover:underline dark:text-teal-300" onClick={locate}>◎ {t('useLocation')}</button>
+          <button type="button" className="tap ml-auto font-display font-semibold text-brand underline-offset-4 hover:underline dark:text-teal-300" onClick={locate}>◎ {t('useLocation')}</button>
         </div>
       </div>
     )
   }
   return (
     <div>
-      <span className="mb-1 block text-sm font-medium">{t('from')}</span>
+      <span className="ledger mb-1.5 block">{t('from')}</span>
       <div className="input flex items-center justify-between gap-2">
         <span className="truncate">
-          ◎ {t('currentLocation')}
+          <span className="text-emerald-600 dark:text-emerald-400">◎</span> {t('currentLocation')}
           {state === 'locating' ? <span className="text-slate-600 dark:text-slate-400"> · {t('locating')}</span> : null}
           {state === 'ok' && near ? <span className="text-slate-600 dark:text-slate-400"> · {t('near')} {near.name} ({Math.round(near.walk_min)} {t('minWalk')})</span> : null}
         </span>
-        <button type="button" className="tap shrink-0 text-sm text-brand underline-offset-4 hover:underline dark:text-teal-300" onClick={() => { setMode('stop'); onChange(null) }}>{t('useStop')}</button>
+        <button type="button" className="tap shrink-0 font-display text-sm font-semibold text-brand underline-offset-4 hover:underline dark:text-teal-300" onClick={() => { setMode('stop'); onChange(null) }}>{t('useStop')}</button>
       </div>
     </div>
   )

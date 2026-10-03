@@ -15,8 +15,8 @@ export default defineConfig({
         name: 'MadrasFlow — South Chennai crowd forecast',
         short_name: 'MadrasFlow',
         description: 'Crowd levels for buses, MRTS and metro in South Chennai (simulated demo data).',
-        theme_color: '#0f766e',
-        background_color: '#f8fafc',
+        theme_color: '#fdf9f1',
+        background_color: '#fdf9f1',
         display: 'standalone',
         start_url: '/',
         icons: [

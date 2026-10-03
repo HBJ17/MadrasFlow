@@ -18,8 +18,8 @@ export function activeFilterCount(f: PlanFilters): number {
 function Seg<T>({ label, options, value, onChange, fmt }: { label: string; options: T[]; value: T; onChange: (v: T) => void; fmt: (v: T) => string }) {
   return (
     <fieldset>
-      <legend className="mb-1 text-sm font-medium">{label}</legend>
-      <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+      <legend className="ledger mb-1.5">{label}</legend>
+      <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-[#1a1d25]">
         {options.map((o) => (
           <button key={String(o)} type="button" className="seg" aria-pressed={o === value} onClick={() => onChange(o)}>{fmt(o)}</button>
         ))}
@@ -31,8 +31,8 @@ function Seg<T>({ label, options, value, onChange, fmt }: { label: string; optio
 function Toggle({ id, label, hint, checked, onChange }: { id: string; label: string; hint: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <label htmlFor={id} className="tap flex cursor-pointer items-start gap-3">
-      <input id={id} type="checkbox" className="mt-1 h-6 w-6 shrink-0 accent-teal-700" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span><span className="font-medium">{label}</span><span className="block text-xs text-slate-600 dark:text-slate-400">{hint}</span></span>
+      <input id={id} type="checkbox" className="mt-1 h-6 w-6 shrink-0 accent-[#002046] dark:accent-lime" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span><span className="font-display font-semibold">{label}</span><span className="block text-xs text-slate-600 dark:text-slate-400">{hint}</span></span>
     </label>
   )
 }
@@ -56,20 +56,20 @@ export default function FilterSheet({ open, value, defaults, onClose, onApply }:
   }
   return (
     <dialog ref={ref} onClose={onClose} aria-labelledby="filters-title"
-      className="m-0 mt-auto w-full max-w-none rounded-t-3xl bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/50 sm:m-auto sm:max-w-lg sm:rounded-3xl dark:bg-slate-900 dark:text-slate-100">
+      className="m-0 mt-auto w-full max-w-none rounded-t-3xl bg-paper p-0 text-ink shadow-2xl ring-1 ring-slate-200 backdrop:bg-black/60 backdrop:backdrop-blur-sm sm:m-auto sm:max-w-lg sm:rounded-2xl dark:bg-slate-900 dark:text-slate-100 dark:ring-white/10">
       <form method="dialog" className="space-y-5 p-5" onSubmit={(e) => { e.preventDefault(); onApply(f); onClose() }}>
         <div className="flex items-center justify-between">
-          <h2 id="filters-title" className="text-xl font-bold">{t('filters')}</h2>
-          <button type="button" className="tap rounded-lg px-2" aria-label="Close" onClick={onClose}>✕</button>
+          <h2 id="filters-title" className="text-xl font-bold text-[#002046] dark:text-navy-soft">{t('filters')}</h2>
+          <button type="button" className="tap rounded-full bg-slate-100 text-slate-600 hover:text-ink dark:bg-[#252b36] dark:text-slate-300" aria-label="Close" onClick={onClose}>✕</button>
         </div>
         <fieldset>
-          <legend className="mb-1 text-sm font-medium">{t('modes')}</legend>
+          <legend className="ledger mb-1.5">{t('modes')}</legend>
           <div className="flex flex-wrap gap-2">
             {MODES.map((m) => {
               const on = f.modes.includes(m)
               return (
                 <button key={m} type="button" aria-pressed={on} onClick={() => toggleMode(m)}
-                  className={`tap inline-flex items-center gap-2 rounded-full px-4 text-sm font-medium ring-1 ${on ? 'bg-brand text-white ring-brand' : 'ring-slate-300 dark:ring-slate-700'}`}>
+                  className={`tap inline-flex items-center gap-2 rounded-full px-4 font-display text-sm font-semibold ring-1 transition ${on ? 'brand-fill ring-transparent' : 'bg-slate-100 text-slate-700 ring-slate-200 dark:bg-[#1e232e] dark:text-slate-300 dark:ring-white/10'}`}>
                   <ModeIcon mode={m} /> {t(m)}
                 </button>
               )
@@ -83,7 +83,7 @@ export default function FilterSheet({ open, value, defaults, onClose, onApply }:
         <Seg label={t('maxTransfers')} options={TRANSFERS} value={f.max_transfers} onChange={(v) => setF({ ...f, max_transfers: v })}
           fmt={(v) => (v == null ? t('any') : v === 0 ? t('direct') : t('upTo1'))} />
         <div className="space-y-2">
-          <h3 className="text-sm font-medium">{t('accessibility')}</h3>
+          <h3 className="ledger">{t('accessibility')}</h3>
           <Toggle id="f-step" label={t('stepFree')} hint={t('stepFreeHint')} checked={f.step_free} onChange={(v) => setF({ ...f, step_free: v })} />
           <Toggle id="f-women" label={t('women')} hint={t('womenHint')} checked={f.women} onChange={(v) => setF({ ...f, women: v })} />
         </div>

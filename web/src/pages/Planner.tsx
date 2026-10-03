@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { getJSON, postJSON, usePolling, type PlanFilters, type RankKey, type StopInfo, type WindowPlan } from '../api'
-import { SimBadge } from '../components'
+import { BackButton, Icon, SimBadge } from '../components'
 import { useT } from '../i18n'
 import { useLocation } from '../router'
 import FilterSheet, { activeFilterCount } from './planner/FilterSheet'
@@ -74,20 +74,20 @@ export default function Planner() {
 
   return (
     <div className="space-y-4">
-      <button className="tap text-sm text-brand underline-offset-4 hover:underline dark:text-teal-300" onClick={() => history.back()}>← {t('back')}</button>
-      <h1 className="text-2xl font-bold">{t('planTrip')}</h1>
+      <BackButton label={t('back')} />
+      <h1 className="text-[28px] font-bold leading-tight text-[#002046] dark:text-navy-soft">{t('planTrip')}</h1>
       <form onSubmit={submit} className="card space-y-4 p-4">
         {list.length ? (
           <>
             <LocationField key={`f-${initFrom?.stop_id}`} stops={list} initialStop={initFrom} onChange={setOrigin} />
             <StopPicker id="to" label={t('to')} stops={list} value={to} onChange={setTo} />
           </>
-        ) : <p className="text-sm text-slate-600 dark:text-slate-400">{t('loading')}</p>}
+        ) : <p className="ledger">{t('loading')}</p>}
         <WindowStepper time={time} onTime={setTime} window={win} onWindow={setWin} />
         <RankToggles value={rank} onChange={setRank} />
-        <div className="flex gap-3">
+        <div className="flex gap-3 border-t border-slate-200 pt-4 dark:border-white/5">
           <button type="button" className="btn-ghost" onClick={() => setSheet(true)} aria-haspopup="dialog">
-            ⚙ {t('filters')}{activeFilterCount(filters) ? <span className="rounded-full bg-brand px-2 text-xs text-white">{activeFilterCount(filters)}</span> : null}
+            <Icon name="tune" className="h-4 w-4" /> {t('filters')}{activeFilterCount(filters) ? <span className="rounded-md bg-lime px-1.5 font-mono text-xs font-bold text-lime-ink">{activeFilterCount(filters)}</span> : null}
           </button>
           <button className="btn-primary flex-1" disabled={busy}>{busy ? t('loading') : t('go')}</button>
         </div>
@@ -98,7 +98,7 @@ export default function Planner() {
         <section className="space-y-3" aria-live="polite">
           <div className="flex items-center gap-3">
             <SimBadge source={res.data_source} />
-            {busy ? <span role="status" className="text-sm text-slate-600 dark:text-slate-400">{t('updating')}</span> : null}
+            {busy ? <span role="status" className="ledger">{t('updating')}</span> : null}
           </div>
           <SlotCarousel plan={res} selected={sel} onSelect={setSel} />
           {sel && res.slots[sel.slot]?.itineraries[sel.idx] ? (

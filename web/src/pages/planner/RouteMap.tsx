@@ -6,7 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import type { WinItinerary } from '../../api'
 import { useT } from '../../i18n'
 
-const COLORS: Record<string, string> = { LOW: '#15803d', MEDIUM: '#eab308', HIGH: '#f97316', CROWDED: '#b91c1c' }
+const COLORS: Record<string, string> = { LOW: '#7fbf3a', MEDIUM: '#ebc247', HIGH: '#f08a3c', CROWDED: '#ba1a1a' }
 
 export default function RouteMap({ it }: { it: WinItinerary }) {
   const t = useT()
@@ -47,15 +47,15 @@ export default function RouteMap({ it }: { it: WinItinerary }) {
       map.addLayer({ id: 'ride', type: 'line', source: 'route', filter: ['==', ['get', 'kind'], 'ride'],
         paint: { 'line-color': ['get', 'color'], 'line-width': 6 }, layout: { 'line-cap': 'round', 'line-join': 'round' } })
       map.addLayer({ id: 'walk', type: 'line', source: 'route', filter: ['==', ['get', 'kind'], 'walk'],
-        paint: { 'line-color': '#475569', 'line-width': 3, 'line-dasharray': [1.5, 1.5] } })
+        paint: { 'line-color': '#44474e', 'line-width': 3, 'line-dasharray': [1.5, 1.5] } })
     })
     const rides = it.legs.filter((l) => l.kind === 'ride' && l.path?.length)
     const pins: [[number, number], string, string][] = []
-    rides.forEach((l, i) => pins.push([l.path![0], i === 0 ? '#0f766e' : '#334155', `${i === 0 ? '▶' : '⇄'} ${l.route} · ${l.from}`]))
-    if (rides.length) { const last = rides[rides.length - 1]; pins.push([last.path![last.path!.length - 1], '#111827', `■ ${last.to}`]) }
+    rides.forEach((l, i) => pins.push([l.path![0], i === 0 ? '#3e6a00' : '#465f88', `${i === 0 ? '▶' : '⇄'} ${l.route} · ${l.from}`]))
+    if (rides.length) { const last = rides[rides.length - 1]; pins.push([last.path![last.path!.length - 1], '#002046', `■ ${last.to}`]) }
     pins.forEach(([xy, bg, label]) => {
       const el = document.createElement('div')
-      el.style.cssText = `width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 3px #000;background:${bg}`
+      el.style.cssText = `width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,32,70,.5);background:${bg}`
       el.setAttribute('aria-label', label)
       new maplibregl.Marker({ element: el }).setLngLat(xy).setPopup(new maplibregl.Popup({ offset: 12 }).setText(label)).addTo(map)
     })

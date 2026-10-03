@@ -28,8 +28,8 @@ function HeatCell({ c, label, cap, compact }: { c: Cell | null; label: string; c
 function Legend() {
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-      {(['LOW', 'MEDIUM', 'HIGH', 'CROWDED'] as Level[]).map((l) => <span key={l} className={`lvl-${l} rounded px-2 py-0.5`}>{l.toLowerCase()}</span>)}
-      <span>% = people on board + left behind ÷ capacity</span>
+      {(['LOW', 'MEDIUM', 'HIGH', 'CROWDED'] as Level[]).map((l) => <span key={l} className={`lvl-${l} rounded-md px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider`}>{l.toLowerCase()}</span>)}
+      <span className="font-mono text-[11px]">% = people on board + left behind ÷ capacity</span>
     </div>
   )
 }
@@ -39,11 +39,11 @@ function Drill({ head, onClose }: { head: RouteHead; onClose: () => void }) {
   const d = usePolling<ByStop | ByBus>(`/fleet/heatmap/${head.route_id}?direction=${head.direction}&view=${view}`, 60_000)
   const data = d.data && d.data.view === view ? d.data : null
   return (
-    <div className="space-y-2 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200 dark:bg-slate-800/50 dark:ring-slate-700">
+    <div className="space-y-2 rounded-xl bg-paper p-3 ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-white/10">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-semibold">{head.route} · {head.from} → {head.to} <span className="font-normal text-slate-600 dark:text-slate-400">({head.depot} depot)</span></h3>
+        <h3 className="font-semibold text-[#002046] dark:text-navy-soft">{head.route} · {head.from} → {head.to} <span className="font-normal text-slate-600 dark:text-slate-400">({head.depot} depot)</span></h3>
         <div className="flex items-center gap-2">
-          <div className="flex gap-1 rounded-xl bg-slate-200/70 p-1 dark:bg-slate-900" role="group" aria-label="Drill-down view">
+          <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-[#1a1d25]" role="group" aria-label="Drill-down view">
             <button type="button" className="seg" aria-pressed={view === 'stops'} onClick={() => setView('stops')}>By stop</button>
             <button type="button" className="seg" aria-pressed={view === 'buses'} onClick={() => setView('buses')}>By bus</button>
           </div>
@@ -53,7 +53,7 @@ function Drill({ head, onClose }: { head: RouteHead; onClose: () => void }) {
       {!data ? <p className="text-sm text-slate-600 dark:text-slate-400">Loading…</p> : data.view === 'stops' ? (
         <div className="max-h-[28rem] overflow-auto">
           <table className="border-separate border-spacing-0.5 text-xs">
-            <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800"><tr><th className="px-2 text-left">Stop</th>{data.slots.map((s) => <th key={s} className="px-1 font-normal tabular-nums">{hhmm(s)}</th>)}</tr></thead>
+            <thead className="sticky top-0 bg-paper font-mono dark:bg-slate-950"><tr><th className="px-2 text-left">Stop</th>{data.slots.map((s) => <th key={s} className="px-1 font-normal tabular-nums">{hhmm(s)}</th>)}</tr></thead>
             <tbody>
               {data.rows.map((r, i) => (
                 <tr key={r.stop_id}>
@@ -68,7 +68,7 @@ function Drill({ head, onClose }: { head: RouteHead; onClose: () => void }) {
         <div className="max-h-[28rem] overflow-auto">
           {!data.rows.length ? <p className="text-sm text-slate-600 dark:text-slate-400">No trips run in the forecast window.</p> : (
             <table className="border-separate border-spacing-0.5 text-xs">
-              <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800">
+              <thead className="sticky top-0 bg-paper font-mono dark:bg-slate-950">
                 <tr>
                   <th className="px-2 text-left">Bus (leaves)</th>
                   {data.stops.map((s, i) => <th key={s.stop_id} className="w-6 font-normal tabular-nums" title={s.name}>{i + 1}</th>)}
@@ -104,15 +104,15 @@ export default function Heatmap() {
       {!d?.rows.length ? <p className="text-sm text-slate-600 dark:text-slate-400">{o.loading ? 'Loading forecast…' : 'No forecast yet. The forecast job runs every 5 minutes.'}</p> : (
         <div className="overflow-x-auto">
           <table className="w-full border-separate border-spacing-0.5 text-xs">
-            <thead><tr><th className="sticky left-0 bg-white px-2 text-left dark:bg-slate-900">Route</th>{d.slots.map((s) => <th key={s} className="px-1 font-normal tabular-nums">{hhmm(s)}</th>)}</tr></thead>
+            <thead className="font-mono"><tr><th className="sticky left-0 bg-card px-2 text-left">Route</th>{d.slots.map((s) => <th key={s} className="px-1 font-normal tabular-nums">{hhmm(s)}</th>)}</tr></thead>
             <tbody>
               {d.rows.map((r) => {
                 const sel = open?.route_id === r.route_id && open.direction === r.direction
                 return (
                   <tr key={`${r.route_id}|${r.direction}`}>
-                    <th className="sticky left-0 bg-white px-1 text-left font-medium dark:bg-slate-900">
+                    <th className="sticky left-0 bg-card px-1 text-left font-medium">
                       <button type="button" aria-expanded={sel} onClick={() => setOpen(sel ? null : r)}
-                        className={`tap w-full whitespace-nowrap rounded-lg px-1 text-left hover:bg-slate-100 dark:hover:bg-slate-800 ${sel ? 'text-brand underline dark:text-teal-300' : ''}`}>
+                        className={`tap w-full whitespace-nowrap rounded-lg px-1 text-left hover:bg-slate-100 dark:hover:bg-slate-800 ${sel ? 'font-semibold text-brand underline dark:text-teal-300' : ''}`}>
                         {r.route} → {r.to}
                       </button>
                     </th>

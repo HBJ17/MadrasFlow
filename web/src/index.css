@@ -1,47 +1,122 @@
 @import "tailwindcss";
 
-/* Crowd-level colours: always paired with a text label (colour is never the only signal).
-   Text/background pairs meet WCAG AA contrast. */
+/* Theme: warm paper surfaces, deep navy ink, lime / gold / ember signals.
+   Display = Space Grotesk, body = IBM Plex Sans, ledger labels and numbers = JetBrains Mono.
+   The neutral (slate) and accent scales are remapped so every existing utility picks up the theme:
+   the low end of each scale is the light surface family, the high end is the dark surface family. */
 @theme {
-  --color-brand: #0f766e;
-  --color-brand-ink: #134e4a;
-  --color-low: #15803d;
-  --color-medium: #facc15;
-  --color-high: #fb923c;
-  --color-crowded: #b91c1c;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Tamil", "Latha", sans-serif;
+  --color-brand: #002046;
+  --color-brand-ink: #1b365d;
+  --color-paper: #fdf9f1;
+  --color-card: #f7f3eb;
+  --color-ink: #1c1c17;
+  --color-lime: #b9f477;
+  --color-lime-ink: #0f2000;
+  --color-navy-fixed: #d6e3ff;
+  --color-navy-soft: #aec7f7;
+
+  /* Crowd-level colours: always paired with a text label (colour is never the only signal).
+     Text/background pairs meet WCAG AA contrast. */
+  --color-low: #7fbf3a;
+  --color-medium: #ebc247;
+  --color-high: #f08a3c;
+  --color-crowded: #ba1a1a;
+
+  --color-slate-50: #f7f3eb;
+  --color-slate-100: #ece8e0;
+  --color-slate-200: #e2ded5;
+  --color-slate-300: #c4c6cf;
+  --color-slate-400: #9a9ca5;
+  --color-slate-500: #74777f;
+  --color-slate-600: #44474e;
+  --color-slate-700: #2d3341;
+  --color-slate-800: #232833;
+  --color-slate-900: #181b22;
+  --color-slate-950: #12141a;
+
+  --color-teal-50: #e9efff;
+  --color-teal-300: #aec7f7;
+  --color-teal-600: #465f88;
+  --color-teal-700: #002046;
+  --color-teal-950: #0d2240;
+  --color-sky-500: #465f88;
+
+  --color-emerald-400: #9ed75e;
+  --color-emerald-600: #3e6a00;
+  --color-emerald-700: #3e6a00;
+
+  --color-amber-50: #fff8e6;
+  --color-amber-100: #ffefc2;
+  --color-amber-200: #ffe08d;
+  --color-amber-300: #ebc247;
+  --color-amber-400: #cda72d;
+  --color-amber-700: #745b00;
+  --color-amber-900: #4f3d00;
+  --color-amber-950: #241a00;
+
+  --color-red-400: #ffb4ab;
+  --color-red-700: #ba1a1a;
+
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Tamil", "Latha", sans-serif;
+  --font-display: "Space Grotesk", "IBM Plex Sans", system-ui, "Noto Sans Tamil", "Latha", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
 }
 
 @custom-variant dark (@media (prefers-color-scheme: dark));
 
 :root { color-scheme: light dark; }
-body { @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased; }
-a { -webkit-tap-highlight-color: transparent; }
-:focus-visible { outline: 3px solid #0ea5e9; outline-offset: 2px; border-radius: 6px; }
+@media (prefers-color-scheme: dark) {
+  /* Outlines, links and rings flip to the light navy so they stay visible on dark surfaces */
+  :root { --color-brand: #aec7f7; --color-brand-ink: #d6e3ff; --color-card: #181b22; }
+}
 
-.lvl-LOW { background: var(--color-low); color: #fff; }
-.lvl-MEDIUM { background: var(--color-medium); color: #1c1917; }
-.lvl-HIGH { background: var(--color-high); color: #1c1917; }
+body { @apply bg-paper text-ink dark:bg-slate-950 dark:text-[#f4f0e8] antialiased; }
+::selection { background: var(--color-lime); color: var(--color-lime-ink); }
+/* In the base layer so utilities such as `ledger` can still restyle a heading */
+@layer base {
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.01em; }
+  h1 { letter-spacing: -0.02em; }
+}
+a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #465f88; outline-offset: 2px; border-radius: 6px; }
+@media (prefers-color-scheme: dark) { :focus-visible { outline-color: var(--color-lime); } }
+
+.lvl-LOW { background: #b9f477; color: #0f2000; }
+.lvl-MEDIUM { background: #ffe08d; color: #241a00; }
+.lvl-HIGH { background: #ffb68a; color: #331200; }
 .lvl-CROWDED { background: var(--color-crowded); color: #fff; }
-.lvl-none { background: #cbd5e1; color: #1e293b; }
+.lvl-none { background: #e2ded5; color: #44474e; }
+@media (prefers-color-scheme: dark) { .lvl-none { background: #232833; color: #c4c6cf; } }
 .bar-LOW { background: var(--color-low); }
 .bar-MEDIUM { background: var(--color-medium); }
 .bar-HIGH { background: var(--color-high); }
 .bar-CROWDED { background: var(--color-crowded); }
+.bar-none { background: var(--color-slate-300); }
+
+.pulse-ring { animation: pulse-ring 2.2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+@keyframes pulse-ring { 75%, 100% { transform: scale(2.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pulse-ring { animation: none; } }
 
 @utility tap { min-height: 44px; min-width: 44px; }
-@utility card { @apply rounded-2xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800; }
-@utility btn { @apply tap inline-flex items-center justify-center gap-2 rounded-xl px-4 font-medium transition; }
-@utility btn-primary { @apply btn bg-brand text-white hover:bg-brand-ink disabled:opacity-60; }
-@utility btn-ghost { @apply btn ring-1 ring-slate-300 dark:ring-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800; }
-@utility input { @apply tap w-full rounded-xl bg-white dark:bg-slate-900 px-3 ring-1 ring-slate-300 dark:ring-slate-700 focus:ring-2 focus:ring-brand outline-none; }
-@utility seg { @apply tap flex-1 rounded-lg px-3 text-sm font-medium; }
-.seg[aria-pressed="true"] { background: var(--color-brand); color: #fff; }
+@utility card { @apply rounded-xl bg-card ring-1 ring-slate-200 dark:ring-white/5; }
+@utility ledger { @apply font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-400; }
+@utility brand-fill { @apply bg-[#002046] text-white dark:bg-navy-fixed dark:text-[#001b3d]; }
+@utility btn { @apply tap inline-flex items-center justify-center gap-2 rounded-xl px-4 font-display font-semibold tracking-tight transition active:scale-[0.98] disabled:active:scale-100; }
+@utility btn-primary { @apply btn brand-fill shadow-sm hover:bg-brand-ink dark:hover:bg-white disabled:opacity-60; }
+@utility btn-ghost { @apply btn bg-slate-100 text-[#002046] hover:bg-slate-200 dark:bg-[#252b36] dark:text-navy-soft dark:hover:bg-[#2d3341] disabled:opacity-50; }
+@utility input { @apply tap w-full rounded-xl bg-white dark:bg-slate-950 px-3 ring-1 ring-slate-200 dark:ring-white/10 focus:ring-2 focus:ring-brand outline-none placeholder:text-slate-500; }
+@utility seg { @apply tap flex-1 rounded-lg px-3 font-display text-sm font-semibold text-slate-600 transition hover:text-ink dark:text-slate-300 dark:hover:text-white; }
+.seg[aria-pressed="true"] { @apply brand-fill shadow-sm; }
+@utility tile { @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg; }
 
-/* Chart axis labels follow the theme (series colours are set in Depot.tsx) */
-:root { --c-axis: #475569; }
+/* Chart axis labels follow the theme (series colours are set in depot/ui.tsx) */
+:root { --c-axis: #44474e; }
 @media (prefers-color-scheme: dark) {
-  :root { --c-axis: #cbd5e1; }
+  :root { --c-axis: #c4c6cf; }
 }
-.recharts-cartesian-axis-tick-value { fill: var(--c-axis); }
-.recharts-tooltip-wrapper .recharts-default-tooltip { background: #0f172a !important; color: #f8fafc; border-color: #334155 !important; }
+.recharts-cartesian-axis-tick-value { fill: var(--c-axis); font-family: var(--font-mono); font-size: 11px; }
+.recharts-legend-item-text { font-family: var(--font-sans); font-size: 12px; }
+.recharts-tooltip-wrapper .recharts-default-tooltip { background: #002046 !important; color: #fdf9f1; border-color: #1b365d !important; border-radius: 10px; font-family: var(--font-mono); font-size: 12px; }
+
+/* Map popups pick up the type and surfaces */
+.maplibregl-popup-content { font-family: var(--font-sans); font-size: 13px; border-radius: 10px; color: #1c1c17; background: #fdf9f1; box-shadow: 0 6px 20px rgb(0 0 0 / 0.18); }

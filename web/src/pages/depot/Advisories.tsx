@@ -41,7 +41,7 @@ export default function Advisories() {
         <div className="flex flex-wrap gap-2" role="group" aria-label="Show recommendations">
           {(['all', 'add_trips', 'short_turn', 'move_bus', 'hold_for_train'] as const).map((k) => (
             <button key={k} type="button" aria-pressed={show === k} onClick={() => setShow(k)}
-              className={`tap rounded-full px-3 text-sm ring-1 ${show === k ? 'bg-brand text-white ring-brand' : 'ring-slate-300 dark:ring-slate-700'}`}
+              className={`tap rounded-full px-3 font-display text-sm font-semibold ring-1 transition disabled:opacity-50 ${show === k ? 'brand-fill ring-transparent' : 'bg-slate-100 text-slate-700 ring-slate-200 dark:bg-[#1e232e] dark:text-slate-300 dark:ring-white/10'}`}
               disabled={k !== 'all' && !counts[k]}>
               {k === 'all' ? `All (${all.length})` : `${KIND[k].icon} ${KIND[k].label} (${counts[k] ?? 0})`}
             </button>
@@ -53,16 +53,16 @@ export default function Advisories() {
         {list.map((x) => {
           const k = KIND[x.kind]
           return (
-            <li key={x.advisory_id} className={`space-y-1.5 rounded-xl p-3 ring-1 ${x.status === 'accepted' ? 'ring-2 ring-teal-600' : x.status === 'rejected_by_whatif' ? 'ring-slate-300 opacity-70 dark:ring-slate-700' : 'ring-amber-400'}`}>
+            <li key={x.advisory_id} className={`space-y-1.5 rounded-xl bg-paper p-3 ring-1 dark:bg-slate-950 ${x.status === 'accepted' ? 'ring-2 ring-emerald-600 dark:ring-emerald-400' : x.status === 'rejected_by_whatif' ? 'ring-slate-300 opacity-70 dark:ring-slate-700' : 'ring-amber-400'}`}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-2">
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold dark:bg-slate-800">{k.icon} {k.label}</span>
-                  <b>{x.route} · {x.depot} depot</b>
+                  <span className="rounded-md bg-slate-200 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider dark:bg-slate-800">{k.icon} {k.label}</span>
+                  <b className="font-display text-[#002046] dark:text-navy-soft">{x.route} · {x.depot} depot</b>
                 </span>
-                <span className="text-xs uppercase text-slate-600 dark:text-slate-400">{x.status === 'rejected_by_whatif' ? 'did not pass twin test' : x.status}</span>
+                <span className="ledger text-[10px]">{x.status === 'rejected_by_whatif' ? 'did not pass twin test' : x.status}</span>
               </div>
               <p className="text-sm"><span className="font-medium">Why: </span>{x.reason} <span className="tabular-nums text-slate-600 dark:text-slate-400">({hhmm(x.slot_start)}–{hhmm(x.slot_end)})</span></p>
-              <p className="font-semibold">➜ {x.action}</p>
+              <p className="font-display font-semibold">➜ {x.action}</p>
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 {x.expected_lf_before != null ? <LevelChip level={levelOf(x.expected_lf_before)} lf={x.expected_lf_before} size="md" /> : null}
                 {x.expected_lf_after != null ? <>→ <LevelChip level={levelOf(x.expected_lf_after)} lf={x.expected_lf_after} size="md" /></> : null}

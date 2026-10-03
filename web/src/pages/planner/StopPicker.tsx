@@ -14,14 +14,14 @@ export default function StopPicker({ id, label, stops, value, onChange }: {
   }, [q, stops])
   return (
     <div className="relative">
-      <label htmlFor={id} className="mb-1 block text-sm font-medium">{label}</label>
+      <label htmlFor={id} className="ledger mb-1.5 block">{label}</label>
       <input id={id} className="input" value={q} autoComplete="off" role="combobox" aria-expanded={open} aria-controls={`${id}-list`}
         onChange={(e) => { setQ(e.target.value); setOpen(true); onChange(null) }} onFocus={() => setOpen(true)} />
       {open && q && opts.length > 0 ? (
-        <ul id={`${id}-list`} role="listbox" className="card absolute z-10 mt-1 w-full overflow-hidden">
+        <ul id={`${id}-list`} role="listbox" className="card absolute z-10 mt-1 w-full divide-y divide-slate-200 overflow-hidden shadow-lg dark:divide-white/5">
           {opts.map((s) => (
             <li key={s.stop_id} role="option" aria-selected={value?.stop_id === s.stop_id}>
-              <button type="button" className="tap flex w-full items-center gap-2 px-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
+              <button type="button" className="tap flex w-full items-center gap-2 px-3 text-left hover:bg-slate-100 dark:hover:bg-slate-800"
                 onClick={() => { onChange(s); setQ(s.name); setOpen(false) }}>
                 <ModeIcon mode={s.mode} /> {s.name}
               </button>
