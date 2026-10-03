@@ -3,6 +3,7 @@ import { getJSON, hhmm, postJSON, usePolling, type PlanFilters, type RankKey, ty
 import { LevelChip, SimBadge } from '../components'
 import { useT } from '../i18n'
 import { useLocation } from '../router'
+import FilterSheet, { activeFilterCount } from './planner/FilterSheet'
 import LocationField, { type Origin } from './planner/LocationField'
 import RankToggles, { DEFAULT_RANK } from './planner/RankToggles'
 import StopPicker from './planner/StopPicker'
@@ -24,7 +25,8 @@ export default function Planner() {
   const [time, setTime] = useState('')
   const [win, setWin] = useState(15)
   const [rank, setRank] = useState<RankKey[]>(DEFAULT_RANK)
-  const [filters] = useState<PlanFilters>(DEFAULT_FILTERS)
+  const [filters, setFilters] = useState<PlanFilters>(DEFAULT_FILTERS)
+  const [sheet, setSheet] = useState(false)
   const [res, setRes] = useState<WindowPlan | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -65,9 +67,15 @@ export default function Planner() {
         ) : <p className="text-sm text-slate-600 dark:text-slate-400">{t('loading')}</p>}
         <WindowStepper time={time} onTime={setTime} window={win} onWindow={setWin} />
         <RankToggles value={rank} onChange={setRank} />
-        <button className="btn-primary w-full" disabled={busy}>{busy ? t('loading') : t('go')}</button>
+        <div className="flex gap-3">
+          <button type="button" className="btn-ghost" onClick={() => setSheet(true)} aria-haspopup="dialog">
+            ⚙ {t('filters')}{activeFilterCount(filters) ? <span className="rounded-full bg-brand px-2 text-xs text-white">{activeFilterCount(filters)}</span> : null}
+          </button>
+          <button className="btn-primary flex-1" disabled={busy}>{busy ? t('loading') : t('go')}</button>
+        </div>
         {err ? <p role="alert" className="text-sm text-red-700 dark:text-red-400">{err}</p> : null}
       </form>
+      <FilterSheet open={sheet} value={filters} defaults={DEFAULT_FILTERS} onClose={() => setSheet(false)} onApply={setFilters} />
       {res ? (
         <section className="space-y-3" aria-live="polite">
           <SimBadge source={res.data_source} />
