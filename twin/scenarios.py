@@ -48,8 +48,8 @@ def _apply_rain(s: Scenario, rc: dict):
         s.dispatch_delay_mult[m] = s.dispatch_delay_mult.get(m, 1.0) * v
 
 
-def _apply_builder(s: Scenario, sc: dict, cfg: dict, dcfg: dict, add_event) -> None:
-    """Scenario builder: combine any subset of day type, weather, events, disruptions and demand."""
+def _apply_builder(s: Scenario, sc: dict, cfg: dict, dcfg: dict, add_event, net) -> None:
+    """Scenario builder: combine any subset of day type, weather, events, disruptions, demand and fleet."""
     if sc.get("day_type") in ("weekend", "holiday"):
         s.day_type = "weekend"   # holidays use the weekend profile
         s.tags.append(sc["day_type"])
@@ -85,6 +85,12 @@ def _apply_builder(s: Scenario, sc: dict, cfg: dict, dcfg: dict, add_event) -> N
     pct = float(sc.get("demand_pct") or 0)
     if pct:
         s.day_total_mult *= 1 + max(-50.0, min(50.0, pct)) / 100
+    if sc.get("fleet"):
+        from twin.fleet import buses_to_trips
+
+        trips, _ = buses_to_trips(net, sc["fleet"])
+        s.extra_trips = s.extra_trips + trips
+        s.tags.append("fleet_plan")
 
 
 def resolve(scenario_id: str, ctx, net, dcfg: dict, mods: dict | None = None, use_calendar: bool = True) -> Scenario:
@@ -146,7 +152,7 @@ def resolve(scenario_id: str, ctx, net, dcfg: dict, mods: dict | None = None, us
         s.headway_changes.append({"modes": sc["suspend_modes"], "from_min": w0, "to_min": w1, "mult": float("inf")})
         s.tags.append("cyclone")
     if scenario_id == "builder":
-        _apply_builder(s, sc, cfg, dcfg, add_event)
+        _apply_builder(s, sc, cfg, dcfg, add_event, net)
     if sc.get("extra_trips"):
         s.extra_trips = s.extra_trips + list(sc["extra_trips"])
     if scenario_id == "custom":
