@@ -57,14 +57,13 @@ def generate_arrivals(paths, net, dcfg: dict, ctx: DayContext, scen, rng: np.ran
     w *= np.array([np.mean([bm.get(m, 1.0) for m in ms.split(",")]) for ms in st.modes.values])
 
     # Daily total D = base * day_type * season * event * noise (weather per mode via thinning later)
-    day_mult = 1.0 if ctx.day_type == "weekday" else dcfg["weekend"]["total_mult"]
-    if scen.day_type == "weekend":
-        day_mult = dcfg["weekend"]["total_mult"]
+    day_type = scen.day_type if scen.day_type in ("weekday", "weekend") else ctx.day_type   # a scenario may force it
+    day_mult = 1.0 if day_type == "weekday" else dcfg["weekend"]["total_mult"]
     D = (dcfg["base_daily_trips"] * day_mult * dcfg.get("season_mult", 1.0) * scen.day_total_mult
          * np.exp(rng.normal(0, dcfg.get("day_noise_sigma", 0.0))))
     D *= scen.max_mode_mult  # oversample; thinned per mode after choice
 
-    profiles = slot_profiles(dcfg, "weekend" if scen.day_type == "weekend" else ctx.day_type, svc_start, svc_end)
+    profiles = slot_profiles(dcfg, day_type, svc_start, svc_end)
     prof = np.stack([profiles[t] for t in types])               # n x 96
     stmult = np.array([scen.stop_type_mult.get(t, 1.0) for t in types])
     mean = D * (w / w_norm)[:, None] * prof * stmult[:, None]  # n x 96

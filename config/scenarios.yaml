@@ -41,5 +41,17 @@ cyclone:
 extra_trips:
   label: Extra trips (what-if)
   extra_trips: []                  # [{route: BUS_95, direction: 0, start: "08:00", end: "09:30", n: 2}]
+builder:
+  label: Scenario builder (any mix of conditions and fleet changes)
+  # Everything is optional; omitted parts keep a normal weekday. Passed as mods by the dashboard:
+  #   day_type: weekday | weekend | holiday
+  #   weather: dry | light | heavy | cyclone
+  #   events: [{venue_stop, attendance, start "HH:MM", end "HH:MM"}]
+  #   disruptions: [{kind: metro_delay | mrts_suspended | bus_cut, from "HH:MM", to "HH:MM"}]
+  #   demand_pct: -50 .. +50
+  #   fleet: [{route, direction (null = both), hour, buses}]
+  event_defaults: {before_h: 2, after_h: 1}
+  metro_delay_headway_mult: 2.0
+  bus_cut_headway_mult: 1.35
 custom:
   label: Custom multipliers (JSON)

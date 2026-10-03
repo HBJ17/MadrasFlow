@@ -12,7 +12,7 @@ import pandas as pd
 from common.config import hhmm_to_min, load_yaml
 
 SCENARIO_IDS = ["baseline", "weekend", "rain_heavy", "cricket_match", "college_reopening",
-                "metro_disruption", "cyclone", "extra_trips", "custom"]
+                "metro_disruption", "cyclone", "extra_trips", "builder", "custom"]
 
 
 @dataclass
@@ -46,6 +46,45 @@ def _apply_rain(s: Scenario, rc: dict):
     s.run_time_mult *= rc.get("run_time_mult", 1.0)
     for m, v in rc.get("dispatch_delay_mult", {}).items():
         s.dispatch_delay_mult[m] = s.dispatch_delay_mult.get(m, 1.0) * v
+
+
+def _apply_builder(s: Scenario, sc: dict, cfg: dict, dcfg: dict, add_event) -> None:
+    """Scenario builder: combine any subset of day type, weather, events, disruptions and demand."""
+    if sc.get("day_type") in ("weekend", "holiday"):
+        s.day_type = "weekend"   # holidays use the weekend profile
+        s.tags.append(sc["day_type"])
+    w = sc.get("weather") or "dry"
+    if w == "light":
+        lm = dcfg["weather"]["light_mult"]
+        _apply_rain(s, {"demand_mult": {k: lm[k] for k in ("bus", "metro", "mrts")}, "run_time_mult": lm["run_time"]})
+    elif w == "heavy":
+        _apply_rain(s, cfg["rain_heavy"])
+    elif w == "cyclone":
+        cy = cfg["cyclone"]
+        _apply_rain(s, cy)
+        s.day_total_mult *= cy["day_total_mult"]
+        w0, w1 = (hhmm_to_min(x) for x in cy["window"])
+        for m, mult in cy["headway_mult"].items():
+            s.headway_changes.append({"modes": [m], "from_min": w0, "to_min": w1, "mult": float(mult)})
+        s.headway_changes.append({"modes": cy["suspend_modes"], "from_min": w0, "to_min": w1, "mult": float("inf")})
+    if w != "dry":
+        s.tags.append(f"weather_{w}")
+    ev_cfg, cat = sc.get("event_defaults", {}), cfg["cricket_match"]["catchment_capacity"]
+    for e in sc.get("events") or []:
+        att = int(e["attendance"])
+        add_event(e["venue_stop"], hhmm_to_min(e["start"]), hhmm_to_min(e["end"]), att, cat,
+                  ev_cfg.get("before_h", 2), ev_cfg.get("after_h", 1), 1.0 + 0.2 * min(att, 60000) / 35000)
+        s.tags.append("event")
+    for dsr in sc.get("disruptions") or []:
+        a, b = hhmm_to_min(dsr["from"]), hhmm_to_min(dsr["to"])
+        mult, modes = {"metro_delay": (sc.get("metro_delay_headway_mult", 2.0), ["metro"]),
+                       "mrts_suspended": (float("inf"), ["mrts"]),
+                       "bus_cut": (sc.get("bus_cut_headway_mult", 1.35), ["bus"])}[dsr["kind"]]
+        s.headway_changes.append({"modes": modes, "from_min": a, "to_min": b, "mult": float(mult)})
+        s.tags.append(dsr["kind"])
+    pct = float(sc.get("demand_pct") or 0)
+    if pct:
+        s.day_total_mult *= 1 + max(-50.0, min(50.0, pct)) / 100
 
 
 def resolve(scenario_id: str, ctx, net, dcfg: dict, mods: dict | None = None, use_calendar: bool = True) -> Scenario:
@@ -106,8 +145,10 @@ def resolve(scenario_id: str, ctx, net, dcfg: dict, mods: dict | None = None, us
             s.headway_changes.append({"modes": [m], "from_min": w0, "to_min": w1, "mult": float(mult)})
         s.headway_changes.append({"modes": sc["suspend_modes"], "from_min": w0, "to_min": w1, "mult": float("inf")})
         s.tags.append("cyclone")
+    if scenario_id == "builder":
+        _apply_builder(s, sc, cfg, dcfg, add_event)
     if sc.get("extra_trips"):
-        s.extra_trips = list(sc["extra_trips"])
+        s.extra_trips = s.extra_trips + list(sc["extra_trips"])
     if scenario_id == "custom":
         for k in ("demand_mult", "dispatch_delay_mult", "stop_type_mult"):
             if k in sc:
