@@ -50,7 +50,24 @@ def _advisories():
         log.exception("advisories failed")
 
 
+def _rewind():
+    """A restart with an earlier demo clock must not keep 'future' rows from the previous run: they would
+    shadow the fresh forecast (latest made_at wins) and show events that have not happened yet."""
+    from common import clock
+    from common.config import iso
+    from db.database import execute
+
+    n = {"n": iso(clock.now())}
+    execute("DELETE FROM event WHERE run_id LIKE 'stream-%' AND ts > :n", n)
+    execute("DELETE FROM forecast WHERE made_at > :n", n)
+    execute("DELETE FROM advisory WHERE created_at > :n", n)
+
+
 def _startup():
+    try:
+        _rewind()
+    except Exception:
+        log.exception("rewind failed")
     if os.environ.get("DISABLE_TWIN_STREAM") != "1":
         from twin.stream import ensure_today
 

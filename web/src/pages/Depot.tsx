@@ -1,10 +1,11 @@
 // Operator dashboard: fleet heatmap, advisories, scenario panel (twin what-if), data health, impact.
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { getJSON, hhmm, levelOf, postJSON, usePolling, type RouteInfo } from '../api'
 import { LevelChip, SimBadge } from '../components'
+import Heatmap from './depot/Heatmap'
+import { CHART as C, Panel } from './depot/ui'
 
-interface FcRow { target_slot: string; route_id: string; direction: number; stop_id: string; pred_lf: number; hi: number | null; data_source: string }
 interface Advisory {
   advisory_id: number; route: string; route_id: string; direction: number; depot: string; slot_start: string; slot_end: string
   reason: string; action: string; extra_trips: number; expected_lf_before: number | null; expected_lf_after: number | null
@@ -16,64 +17,6 @@ interface Health {
   camera_recent?: { ts: string; source: string; stop_id: string; vehicle_id: string | null; boardings: number; alightings: number; onboard_load: number | null; waiting_count: number | null }[]
 }
 interface Scenario { id: string; label: string; params: Record<string, unknown> }
-
-// SVG presentation attributes cannot use CSS variables, so pick the palette from the colour scheme.
-const DARK = typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
-const C = DARK ? { before: '#94a3b8', after: '#2dd4bf', grid: '#334155' } : { before: '#64748b', after: '#0d9488', grid: '#e2e8f0' }
-
-function Panel({ title, children, right }: { title: string; children: React.ReactNode; right?: React.ReactNode }) {
-  return (
-    <section className="card space-y-3 p-4">
-      <div className="flex items-center justify-between gap-2"><h2 className="text-lg font-semibold">{title}</h2>{right}</div>
-      {children}
-    </section>
-  )
-}
-
-function Heatmap({ routes }: { routes: RouteInfo[] }) {
-  const fc = usePolling<{ rows: FcRow[]; data_source: 'twin' | 'camera' | 'mixed' }>('/forecast?model=lstm&limit=20000', 60_000)
-  const { slots, rows } = useMemo(() => {
-    const r = fc.data?.rows ?? []
-    const slots = [...new Set(r.map((x) => x.target_slot))].sort()
-    const m = new Map<string, Map<string, number>>()
-    r.forEach((x) => {
-      const k = `${x.route_id}|${x.direction}`
-      if (!m.has(k)) m.set(k, new Map())
-      const mm = m.get(k)!
-      mm.set(x.target_slot, Math.max(mm.get(x.target_slot) ?? 0, x.pred_lf))
-    })
-    const rows = [...m.entries()].sort()
-    return { slots, rows }
-  }, [fc.data])
-  const name = (k: string) => {
-    const [rid, d] = k.split('|')
-    const r = routes.find((x) => x.route_id === rid)
-    return `${r?.short_name ?? rid} → ${r?.directions.find((x) => x.direction === Number(d))?.to ?? d}`
-  }
-  return (
-    <Panel title="Fleet heatmap · next 3 h (max forecast load factor over stops)" right={<SimBadge source={fc.data?.data_source} />}>
-      {!rows.length ? <p className="text-sm text-slate-600 dark:text-slate-400">{fc.loading ? 'Loading forecast…' : 'No forecast yet — the forecast job runs every 5 minutes.'}</p> : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-separate border-spacing-0.5 text-xs">
-            <thead><tr><th className="sticky left-0 bg-white px-2 text-left dark:bg-slate-900">Route</th>{slots.map((s) => <th key={s} className="px-1 font-normal tabular-nums">{hhmm(s)}</th>)}</tr></thead>
-            <tbody>
-              {rows.map(([k, m]) => (
-                <tr key={k}>
-                  <th className="sticky left-0 whitespace-nowrap bg-white px-2 text-left font-medium dark:bg-slate-900">{name(k)}</th>
-                  {slots.map((s) => {
-                    const lf = m.get(s)
-                    const lv = levelOf(lf ?? null)
-                    return <td key={s} className={`lvl-${lv ?? 'none'} rounded px-1 py-1.5 text-center tabular-nums`} title={`${name(k)} ${hhmm(s)}: ${lv}`}>{lf != null ? Math.round(lf * 100) : ''}</td>
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </Panel>
-  )
-}
 
 function Advisories() {
   const a = usePolling<{ advisories: Advisory[]; data_source: 'twin' | 'camera' | 'mixed' }>('/advisories?status=active,accepted,rejected_by_whatif', 30_000)
@@ -304,7 +247,7 @@ export default function Depot() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Depot dashboard</h1>
-      <Heatmap routes={r} />
+      <Heatmap />
       <Advisories />
       <ScenarioPanel routes={r} />
       <div className="grid gap-4 xl:grid-cols-2"><DataHealth /><Impact /></div>
