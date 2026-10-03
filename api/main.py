@@ -28,7 +28,7 @@ CACHED_READS = ("/occupancy", "/forecast", "/history", "/wait-or-go", "/vehicle"
 def _optional_routers():
     """Routers for later phases; imported lazily so the skeleton runs on its own."""
     out = []
-    for name in ("routes_occupancy", "routes_plan", "routes_twin", "routes_stream"):
+    for name in ("routes_occupancy", "routes_plan", "routes_twin", "routes_stream", "routes_fleet"):
         try:
             mod = __import__(f"api.{name}", fromlist=["router"])
             out.append(mod.router)
