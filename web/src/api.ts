@@ -32,9 +32,27 @@ export interface WaitOrGo { suggestion: string; vehicles: { eta_min: number; lev
 export interface Leg {
   kind: 'ride' | 'walk'; mode?: string; route?: string; route_id?: string; from: string; to: string
   board_at?: string; alight_at?: string; wait_min?: number; minutes: number; stops?: number; level?: Level; levels?: Level[]; vehicle_id?: string
+  from_stop?: string; to_stop?: string; km?: number; fare?: number; path?: [number, number][]
 }
 export interface Itinerary { legs: Leg[]; total_min: number; transfers: number; worst_level: Level; crowd_score: number; walk_min: number; arrive_at: string; labels: string[] }
 export interface Plan { itineraries: Itinerary[]; message?: string; data_source: DataSource; simulated: boolean; from: string; to: string }
+export type RankKey = 'crowd' | 'eta' | 'cost' | 'walk' | 'transfers'
+export type Mode = 'bus' | 'mrts' | 'metro'
+export interface PlanFilters {
+  modes: Mode[]; max_walk_min: number | null; max_fare: number | null; max_transfers: number | null
+  step_free: boolean; women: boolean; access_walk_min?: number
+}
+export interface WinItinerary {
+  legs: Leg[]; total_min: number; transfers: number; worst_level: Level; crowd_score: number; walk_min: number
+  arrive_at: string; fare: number; notes: string[]; rank: number; score: number; best_overall?: boolean
+}
+export interface WinSlot { depart_at: string; itineraries: WinItinerary[]; filtered_out: number }
+export interface WindowPlan {
+  from: string; to: string; center: string; window_min: number; rank_by: RankKey[]; slots: WinSlot[]
+  data_source: DataSource; simulated: boolean
+}
+export interface NearStop { stop_id: string; name: string; mode: string; station_id: string; lat: number; lon: number; distance_m: number; walk_min: number }
+
 export interface VehicleInfo {
   vehicle_id: string; route: string; route_id: string; direction: number; last_stop: string; last_report: string
   load: number | null; capacity: number; load_factor: number | null; level: Level | null
