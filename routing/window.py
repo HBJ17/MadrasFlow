@@ -14,6 +14,7 @@ import pandas as pd
 
 from common import clock
 from common.config import IST, iso
+from routing.filters import TripFilters, apply
 from routing.recommend import Planner
 
 SLOT_MIN = 15
@@ -64,7 +65,8 @@ def slot_itineraries(P: Planner, o, dst, t0: float, prefer_low: bool = False) ->
     return [{k: v for k, v in it.items() if k != "signature"} for it in keep]
 
 
-def plan_window(from_stop: str, to_stop: str, center=None, window_min: int = 15) -> dict:
+def plan_window(from_stop: str, to_stop: str, center=None, window_min: int = 15, filters: dict | TripFilters | None = None) -> dict:
+    f = filters if isinstance(filters, TripFilters) else TripFilters.from_dict(filters)
     center = pd.Timestamp(center or clock.now())
     center = (center.tz_localize(IST) if center.tzinfo is None else center).tz_convert(IST).floor("min")
     slots = slot_times(center, window_min)
@@ -77,8 +79,10 @@ def plan_window(from_stop: str, to_stop: str, center=None, window_min: int = 15)
     out = []
     for s in slots:
         t0 = (s - slots[0]).total_seconds() / 60
-        its = sorted(slot_itineraries(P, o, dst, t0), key=lambda x: (x["total_min"], x["crowd_total"]))[:MAX_PER_SLOT]
-        out.append({"depart_at": iso(s), "itineraries": its})
+        raw = slot_itineraries(P, o, dst, t0)
+        its = [x for x in (apply(it, f) for it in raw) if x is not None]
+        its = sorted(its, key=lambda x: (x["total_min"], x["crowd_total"]))[:MAX_PER_SLOT]
+        out.append({"depart_at": iso(s), "itineraries": its, "filtered_out": len(raw) - len(its)})
     srcs = P.fc.get("_sources", set())
     ds = "mixed" if "mixed" in srcs or {"twin", "camera"} <= srcs else ("camera" if "camera" in srcs else ("twin" if "twin" in srcs else "none"))
     return {"from_stop": from_stop, "to_stop": to_stop, "from": P.names[from_stop], "to": P.names[to_stop],
