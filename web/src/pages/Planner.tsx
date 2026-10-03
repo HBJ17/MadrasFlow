@@ -6,6 +6,7 @@ import { useLocation } from '../router'
 import FilterSheet, { activeFilterCount } from './planner/FilterSheet'
 import LocationField, { type Origin } from './planner/LocationField'
 import RankToggles, { DEFAULT_RANK } from './planner/RankToggles'
+import RouteDetail from './planner/RouteDetail'
 import SlotCarousel, { type Selection } from './planner/SlotCarousel'
 import StopPicker from './planner/StopPicker'
 import WindowStepper from './planner/WindowStepper'
@@ -83,6 +84,9 @@ export default function Planner() {
         <section className="space-y-3" aria-live="polite">
           <SimBadge source={res.data_source} />
           <SlotCarousel plan={res} selected={sel} onSelect={setSel} />
+          {sel && res.slots[sel.slot]?.itineraries[sel.idx] ? (
+            <RouteDetail it={res.slots[sel.slot].itineraries[sel.idx]} departAt={res.slots[sel.slot].depart_at} />
+          ) : null}
         </section>
       ) : null}
     </div>

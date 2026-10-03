@@ -30,7 +30,7 @@ export default defineConfig({
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/docs/],
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        globIgnores: ['**/MapView-*', '**/Depot-*'],
+        globIgnores: ['**/MapView-*', '**/RouteMap-*', '**/Depot-*'],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => /\/api\/v1\/(routes|stops)/.test(url.pathname),
