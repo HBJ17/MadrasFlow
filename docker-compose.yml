@@ -1,0 +1,11 @@
+services:
+  transit-twin:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      - CAMERA_API_KEY=${CAMERA_API_KEY:-dev-key}
+      - DEMO_CLOCK_START=${DEMO_CLOCK_START:-}
+    volumes:
+      - ./data:/app/data          # raw inputs, SQLite DB and processed parquet persist across restarts
+      - ./models:/app/models
+      - ./reports:/app/reports
