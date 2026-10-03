@@ -1,0 +1,31 @@
+# Published figures used to calibrate the twin (section 6). Sources in section 3 of the spec.
+network:
+  metro_monthly_aug_2026: 10404098       # CMRL via press
+  metro_daily_avg_jul_2026: 342702       # DT Next
+  metro_daily_avg_feb_2026: 343503       # DT Next
+  metro_peak_day_aug_14_2026: 401607     # press report
+  metro_peak_to_avg_ratio: 1.2           # 401,607 vs ~335,000
+  metro_card_share: 0.94                 # ~94% NCMC card, Aug 2026
+  metro_network_stations: 41             # stations in the GTFS feed (unique)
+
+# The twin covers one corridor. Corridor metro boardings = network daily avg * corridor share.
+# ASSUMPTION: share = corridor metro stations / all stations, equal weights -> 10/41 = 0.244.
+# Documented in ASSUMPTIONS.md.
+corridor:
+  metro_station_share: 0.244             # = 10/41
+  metro_daily_boardings: 83600           # = 342702 * 0.244, rounded
+  # ASSUMPTION: no published MRTS or MTC corridor counts found. Scaled relative to metro:
+  mrts_daily_boardings: 40000            # ASSUMPTION: about half of metro; MRTS is known to run below capacity
+  # ASSUMPTION: the 4 modelled MTC routes stand in for many parallel route variants that are not
+  # modelled, so their target is set by what their GTFS timetables can carry (busiest slots at a
+  # demand load factor of about 1.3-1.4, not overloaded all day), not by the 70:30 bus:rail network
+  # split. Chosen with scripts/dev/bus_sweep.py. Flag in the pitch.
+  bus_daily_boardings: 24000
+  weekday_weekend_ratio: 1.47            # = 1 / 0.68 weekend multiplier (ASSUMPTION, spec 0.6-0.75)
+  peak_hour_share: [0.40, 0.55]          # share of boardings 08-10 + 17-20 (ASSUMPTION to confirm)
+  event_day_ratio: 1.2                   # matches metro peak-day/avg
+
+tolerances:
+  daily_total_rel: 0.05
+  weekday_weekend_rel: 0.10
+  event_day_ratio: [1.1, 1.3]

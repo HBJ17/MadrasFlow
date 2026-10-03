@@ -1,0 +1,34 @@
+# Selectable twin scenarios (section 5.5). Effects are multipliers / timetable changes.
+baseline:
+  label: Normal weekday
+weekend:
+  label: Weekend profile
+  day_type: weekend
+rain_heavy:
+  label: Heavy rain
+  demand_mult: {bus: 1.15, metro: 1.10, mrts: 1.10}   # ASSUMPTION
+  run_time_mult: 1.25                                   # ASSUMPTION
+  dispatch_delay_mult: {bus: 1.5}                       # ASSUMPTION
+cricket_match:
+  label: Cricket match (Chepauk)
+  venue_stop: MRTS_CHPK
+  attendance: 35000
+  catchment_capacity: 20000        # ASSUMPTION: arrivals x (1 + attendance/catchment) near venue
+  before_h: 2
+  after_h: 1
+  match_start: "15:30"
+  match_end: "19:00"
+  day_total_mult: 1.2
+college_reopening:
+  label: College reopening week
+  stop_type_mult: {college: 1.5}
+metro_disruption:
+  label: Metro disruption (headway x2 for 90 min)
+  modes: [metro]
+  headway_mult: 2.0
+  window: ["08:30", "10:00"]
+extra_trips:
+  label: Extra trips (what-if)
+  extra_trips: []                  # [{route: BUS_95, direction: 0, start: "08:00", end: "09:30", n: 2}]
+custom:
+  label: Custom multipliers (JSON)

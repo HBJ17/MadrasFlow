@@ -1,0 +1,89 @@
+# Demand model (section 5.3). Values here are starting points; calibrate.py writes the
+# fitted subset to config/demand_fitted.yaml, which overrides keys of the same name.
+
+# Corridor-level daily trip productions (all modes) on a normal weekday, before calibration.
+base_daily_trips: 120000          # ASSUMPTION: starting value; fitted by calibrate.py
+# Per-mode production scale on station weights (the spec's base_mode); fitted by calibrate.py
+base_mode: {bus: 0.55, mrts: 1.35, metro: 2.4}
+
+# Mode-specific constants for the logit (utility units). Fitted so modelled mode totals hit
+# config/calibration_targets.yaml. Bus is the reference (0).
+asc: {bus: 0.0, mrts: -0.3, metro: 0.2}
+
+# Logit coefficients (section 5.3). U = -a*time - b*fare - c*wait - d*crowd_penalty - e*transfers + asc
+logit: {a_per_min: 0.05, b_per_inr: 0.02, c_per_min: 0.08, d_crowd: 1.5, e_transfer: 0.5}
+
+# Gravity destination choice: P(d|o) ~ w_d * exp(-beta * km)
+beta_per_km: 0.12
+# Weight multiplier for boundary stops of truncated lines (trips leaving the modelled area)
+boundary_weight: 6.0              # ASSUMPTION
+min_trip_km: 1.0
+
+# Production profiles by stop type: list of peaks {at: "HH:MM", width_min: sigma, w: weight} + base.
+# Weights are turned into 15-minute shares summing to 1 over the service day.
+peak_width_scale: 1.0             # calibrated: multiplies every width_min
+profiles:
+  office:      {base: 0.25, peaks: [{at: "09:15", width_min: 35, w: 0.6}, {at: "18:30", width_min: 45, w: 1.4}]}
+  college:     {base: 0.20, peaks: [{at: "08:30", width_min: 25, w: 0.8}, {at: "16:15", width_min: 35, w: 1.2}]}
+  market:      {base: 0.45, peaks: [{at: "11:30", width_min: 75, w: 1.0}, {at: "17:30", width_min: 75, w: 1.1}]}
+  residential: {base: 0.25, peaks: [{at: "08:30", width_min: 45, w: 1.6}, {at: "18:30", width_min: 50, w: 0.5}]}
+  hospital:    {base: 0.45, peaks: [{at: "10:30", width_min: 70, w: 1.0}, {at: "17:00", width_min: 60, w: 0.6}]}
+  interchange: {base: 0.40, peaks: [{at: "08:45", width_min: 45, w: 1.2}, {at: "18:30", width_min: 50, w: 1.2}]}
+# Weekends/holidays: flatter, later peaks, lower total (section 5.3)
+weekend:
+  total_mult: 0.68                # spec: 0.6 - 0.75 of weekday
+  shift_min: 75
+  width_mult: 1.6
+
+# Destination attraction by stop type, AM (before 13:00) vs PM. Makes demand direction-aware.
+attraction:
+  office:      {am: 2.2, pm: 0.6}
+  college:     {am: 1.8, pm: 0.6}
+  market:      {am: 1.0, pm: 1.3}
+  residential: {am: 0.6, pm: 2.0}
+  hospital:    {am: 1.3, pm: 0.8}
+  interchange: {am: 1.2, pm: 1.2}
+
+# POI-based demand weights (computed from OSM within 500 m of each stop)
+poi_weights: {office: 1.0, college: 3.0, university: 4.0, hospital: 2.0, mall: 3.0, railway_station: 4.0, bus_station: 3.0, school: 1.0, marketplace: 2.0}
+demand_weight_floor: 1.0
+
+# Last mile from a rail station by auto / share-auto / walk (not simulated, but priced in the logit)
+egress:
+  modes: [metro, mrts]      # only rail riders get this option (bus stops are close to destinations already)
+  max_km: 3.0
+  detour: 1.3
+  wait_min: 4               # finding a share-auto
+  speed_kmh: 15
+  fare_base: 10             # ASSUMPTION: share-auto flat fare, INR (verify)
+  fare_per_km: 4            # ASSUMPTION
+
+# Arrival process: Poisson, or negative binomial with dispersion k if overdispersed
+arrival: {dist: negbin, k: 8}
+
+# Day-level noise on totals (lognormal sigma) - day-to-day variation
+day_noise_sigma: 0.04
+season_mult: 1.0
+
+# Payment mode shares
+payment:
+  metro: {card: 0.94, qr: 0.055, cash: 0.005}   # Aug 2026 CMRL mix (5.28M NCMC, 0.41M app of ~5.69M)
+  mrts:  {card: 0.15, qr: 0.35, cash: 0.50}      # ASSUMPTION
+  bus:   {card: 0.10, qr: 0.20, cash: 0.70}      # ASSUMPTION
+
+# Patience (minutes): lognormal with this mean; refused twice -> switch or abandon
+patience: {mean_min: 15, sigma: 0.5}
+switch_prob_if_alternative: 0.6
+
+# Weather: rain multipliers applied on wet days (precip in service hours > threshold)
+weather:
+  heavy_rain_mm_per_day: 20       # ASSUMPTION: day counts as rain_heavy above this
+  light_rain_mm_per_day: 5
+  light_mult: {bus: 1.05, metro: 1.03, mrts: 1.03, run_time: 1.10}
+
+# Operations noise
+ops:
+  dispatch_delay_min: {bus: 2.0, metro: 0.3, mrts: 1.5}   # mean of exponential delay
+  run_time_sigma: {bus: 0.12, metro: 0.03, mrts: 0.05}    # lognormal sigma
+  # traffic factor on bus run times by hour (multiplier)
+  traffic: [["04:30","07:00",0.85],["07:00","08:00",1.1],["08:00","10:30",1.35],["10:30","16:30",1.1],["16:30","17:30",1.25],["17:30","20:30",1.45],["20:30","23:30",0.95]]

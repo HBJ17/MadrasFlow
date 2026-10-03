@@ -1,0 +1,149 @@
+# Corridor definition: Tambaram - Velachery - Thiruvanmiyur (+ Guindy / St. Thomas Mount interchange)
+# Adding a route = adding an entry here. No code changes needed.
+name: south_chennai_tvt
+timezone: Asia/Kolkata
+service_day: {start: "04:30", end: "23:30"}
+
+gtfs:
+  zip: data/raw/chennai-unified-gtfs.zip
+  dir: data/raw/gtfs
+
+# Vehicle types and capacities (section 5.4). All are assumptions until verified.
+vehicle_types:
+  bus_ordinary: {mode: bus, capacity_seated: 40, capacity_total: 70}        # ASSUMPTION: verify against MTC specs
+  bus_ac:       {mode: bus, capacity_seated: 38, capacity_total: 55}        # ASSUMPTION
+  mrts_9car:    {mode: mrts, capacity_seated: 1000, capacity_total: 2500}   # ASSUMPTION: verify
+  metro_3car:   {mode: metro, capacity_seated: 350, capacity_total: 1100}   # ASSUMPTION: verify
+
+# Dwell parameters (section 5.2): dwell = d0 + a*boarders + b*alighters (seconds)
+dwell:
+  bus:   {d0: 10, a: 1.5, b: 1.0}
+  metro: {d0: 25, a: 0.4, b: 0.4}
+  mrts:  {d0: 25, a: 0.4, b: 0.4}
+
+# Routes. source=gtfs: stop sequence, run times and trip start times come from the GTFS feed.
+#         source=manual: stops listed here; trips generated from the headway profile.
+# headway_profile: list of [from_hhmm, to_hhmm, headway_min]; used for manual routes, and for
+# GTFS routes when the feed has fewer than gtfs_min_trips trips in a direction.
+routes:
+  - route_id: BUS_51R
+    short_name: "51R"
+    long_name: "Tambaram West - Velachery B.T"
+    mode: bus
+    operator: MTC
+    vehicle_type: bus_ordinary
+    depot: Tambaram            # ASSUMPTION: route -> depot mapping not confirmed
+    source: gtfs
+    gtfs_route_ids: {0: null, 1: "23731"}     # feed has only Velachery->Tambaram; dir 0 = reversed pattern
+    gtfs_min_trips: 20
+    headway_profile: [["04:30","07:00",20],["07:00","10:30",10],["10:30","16:30",15],["16:30","20:30",10],["20:30","23:30",25]]
+  - route_id: BUS_95
+    short_name: "95"
+    long_name: "Tambaram East - Thiruvanmiyur"
+    mode: bus
+    operator: MTC
+    vehicle_type: bus_ordinary
+    depot: Thiruvanmiyur       # ASSUMPTION
+    source: gtfs
+    gtfs_route_ids: {0: "23137", 1: "17488"}
+    gtfs_min_trips: 20
+    headway_profile: [["04:30","07:00",25],["07:00","10:30",15],["10:30","16:30",20],["16:30","20:30",15],["20:30","23:30",30]]
+  - route_id: BUS_S97
+    short_name: "S97"
+    long_name: "Guindy Metro - Velachery B.T"
+    mode: bus
+    operator: MTC
+    vehicle_type: bus_ordinary
+    depot: Velachery           # ASSUMPTION
+    source: gtfs
+    gtfs_route_ids: {0: "23971", 1: "16400"}
+    gtfs_min_trips: 20
+    headway_profile: [["06:00","10:30",25],["10:30","16:30",35],["16:30","22:00",25]]
+  - route_id: BUS_M70
+    short_name: "M70"
+    long_name: "Guindy - Thiruvanmiyur"
+    mode: bus
+    operator: MTC
+    vehicle_type: bus_ordinary
+    depot: Adyar               # ASSUMPTION
+    source: gtfs
+    gtfs_route_ids: {0: "20360", 1: "20361"}
+    gtfs_min_trips: 40         # feed has only 10 midday trips -> use headway profile with GTFS stops/run times
+    headway_profile: [["05:00","07:00",30],["07:00","10:30",15],["10:30","16:30",25],["16:30","20:30",15],["20:30","23:00",35]]
+  - route_id: MRTS_BV
+    short_name: "MRTS"
+    long_name: "Chennai Beach - Velachery (MRTS)"
+    mode: mrts
+    operator: Southern Railway
+    vehicle_type: mrts_9car
+    depot: Velachery
+    source: manual
+    run_speed_kmh: 32          # ASSUMPTION: average including acceleration, excl. dwell
+    # ASSUMPTION: station coordinates are approximate (hand-coded; MRTS not in the GTFS feed)
+    stops:
+      - {stop_id: MRTS_BEACH, name: "Chennai Beach",    lat: 13.0925, lon: 80.2920}
+      - {stop_id: MRTS_FORT,  name: "Chennai Fort",     lat: 13.0835, lon: 80.2860}
+      - {stop_id: MRTS_PARK,  name: "Park Town",        lat: 13.0805, lon: 80.2775}
+      - {stop_id: MRTS_CHTP,  name: "Chintadripet",     lat: 13.0730, lon: 80.2720}
+      - {stop_id: MRTS_CHPK,  name: "Chepauk",          lat: 13.0640, lon: 80.2790}
+      - {stop_id: MRTS_TVKL,  name: "Thiruvallikeni",   lat: 13.0560, lon: 80.2770}
+      - {stop_id: MRTS_LTHS,  name: "Light House",      lat: 13.0430, lon: 80.2740}
+      - {stop_id: MRTS_TMLI,  name: "Thirumylai",       lat: 13.0335, lon: 80.2680}
+      - {stop_id: MRTS_MNDV,  name: "Mandaveli",        lat: 13.0260, lon: 80.2650}
+      - {stop_id: MRTS_GWRD,  name: "Greenways Road",   lat: 13.0180, lon: 80.2595}
+      - {stop_id: MRTS_KTPM,  name: "Kotturpuram",      lat: 13.0150, lon: 80.2480}
+      - {stop_id: MRTS_KSTN,  name: "Kasturba Nagar",   lat: 13.0040, lon: 80.2510}
+      - {stop_id: MRTS_INDR,  name: "Indira Nagar",     lat: 12.9950, lon: 80.2520}
+      - {stop_id: MRTS_TVMR,  name: "Thiruvanmiyur",    lat: 12.9870, lon: 80.2520}
+      - {stop_id: MRTS_TRMN,  name: "Taramani",         lat: 12.9810, lon: 80.2440}
+      - {stop_id: MRTS_PRGD,  name: "Perungudi",        lat: 12.9670, lon: 80.2420}
+      - {stop_id: MRTS_VLCY,  name: "Velachery",        lat: 12.9790, lon: 80.2210}
+    headway_profile: [["04:30","07:00",20],["07:00","10:30",12],["10:30","16:30",20],["16:30","20:30",12],["20:30","23:30",25]]  # ASSUMPTION (spec: 10-15 min)
+  - route_id: METRO_BLUE_S
+    short_name: "Blue"
+    long_name: "Metro Blue Line (Saidapet - Airport segment)"
+    mode: metro
+    operator: CMRL
+    vehicle_type: metro_3car
+    depot: Airport
+    source: manual
+    run_speed_kmh: 34          # ASSUMPTION
+    gtfs_stop_ids: [CMRL_20, CMRL_21, CMRL_22, CMRL_23, CMRL_24, CMRL_25, CMRL_26]   # coords from GTFS
+    boundary_stops: [CMRL_20]  # trips continuing beyond the modelled segment alight here
+    headway_profile: [["05:00","08:00",8],["08:00","11:00",5],["11:00","17:00",8],["17:00","20:00",5],["20:00","23:00",10]]  # ASSUMPTION (spec: 3-6 min peak)
+  - route_id: METRO_GREEN_S
+    short_name: "Green"
+    long_name: "Metro Green Line (Ekkattuthangal - St. Thomas Mount segment)"
+    mode: metro
+    operator: CMRL
+    vehicle_type: metro_3car
+    depot: Koyambedu
+    source: manual
+    run_speed_kmh: 34
+    gtfs_stop_ids: [CMRL_G16, CMRL_G17, CMRL_G18]
+    boundary_stops: [CMRL_G16]
+    headway_profile: [["05:00","08:00",9],["08:00","11:00",6],["11:00","17:00",9],["17:00","20:00",6],["20:00","23:00",12]]  # ASSUMPTION
+
+# Stops within this many metres are one physical station (transfer zone)
+transfer_radius_m: 400
+walk_speed_kmh: 4.5
+transfer_penalty_min: 4
+
+# Fares (configurable table; section 3 row 8 - verify current fares)
+fares:
+  bus:   {per_stage_inr: 2.0, stage_km: 2.0, min_inr: 5.0}     # ASSUMPTION: old city-guide figure scaled; verify
+  mrts:  {flat_inr: 5.0, per_km_inr: 0.25, max_inr: 15.0}       # ASSUMPTION
+  metro: {flat_inr: 10.0, per_km_inr: 2.0, max_inr: 50.0}       # ASSUMPTION
+
+# Corrections applied after reading GTFS (documented in ASSUMPTIONS.md)
+stop_overrides:
+  CMRL_22: {lat: 13.00905, lon: 80.21290}   # ASSUMPTION: feed coordinate is ~600 m east of Guindy metro; moved next to Guindy railway station
+# Known interchanges (suburban rail / multi-line) that name heuristics miss
+stop_type_overrides:
+  MRTS_VLCY: interchange
+  MRTS_BEACH: interchange
+  MRTS_PARK: interchange
+  CMRL_22: interchange
+  CMRL_23: interchange
+  CMRL_G17: interchange
+  CMRL_G18: interchange
