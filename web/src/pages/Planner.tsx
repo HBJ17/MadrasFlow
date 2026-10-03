@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getJSON, postJSON, usePolling, type PlanFilters, type RankKey, type StopInfo, type WindowPlan } from '../api'
 import { SimBadge } from '../components'
 import { useT } from '../i18n'
@@ -14,6 +14,11 @@ import WindowStepper from './planner/WindowStepper'
 export const DEFAULT_FILTERS: PlanFilters = { modes: ['bus', 'mrts', 'metro'], max_walk_min: null, max_fare: null, max_transfers: null, step_free: false, women: false }
 
 const pad = (n: number) => String(n).padStart(2, '0')
+const PREFS = 'mf-planner'
+interface Prefs { win: number; rank: RankKey[]; filters: PlanFilters }
+function loadPrefs(): Partial<Prefs> {
+  try { return JSON.parse(localStorage.getItem(PREFS) || '{}') } catch { return {} }
+}
 
 export default function Planner() {
   const t = useT()
@@ -25,9 +30,10 @@ export default function Planner() {
   const [to, setTo] = useState<StopInfo | null>(null)
   const [day, setDay] = useState<string | null>(null)       // service date from the server's (demo) clock
   const [time, setTime] = useState('')
-  const [win, setWin] = useState(15)
-  const [rank, setRank] = useState<RankKey[]>(DEFAULT_RANK)
-  const [filters, setFilters] = useState<PlanFilters>(DEFAULT_FILTERS)
+  const prefs = useRef(loadPrefs()).current
+  const [win, setWin] = useState(prefs.win ?? 15)
+  const [rank, setRank] = useState<RankKey[]>(prefs.rank ?? DEFAULT_RANK)
+  const [filters, setFilters] = useState<PlanFilters>({ ...DEFAULT_FILTERS, ...prefs.filters })
   const [sheet, setSheet] = useState(false)
   const [res, setRes] = useState<WindowPlan | null>(null)
   const [sel, setSel] = useState<Selection | null>(null)
@@ -42,6 +48,14 @@ export default function Planner() {
       setTime((cur) => cur || `${pad(ist.getHours())}:${pad(ist.getMinutes())}`)
     }).catch(() => setTime((cur) => cur || `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`))
   }, [])
+
+  // remember choices on this device; once results are shown, re-plan when a choice changes
+  useEffect(() => {
+    try { localStorage.setItem(PREFS, JSON.stringify({ win, rank, filters })) } catch { /* storage may be unavailable */ }
+    if (!res) return
+    const h = window.setTimeout(() => submit(), 300)
+    return () => window.clearTimeout(h)
+  }, [win, rank, filters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = async (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -82,7 +96,10 @@ export default function Planner() {
       <FilterSheet open={sheet} value={filters} defaults={DEFAULT_FILTERS} onClose={() => setSheet(false)} onApply={setFilters} />
       {res ? (
         <section className="space-y-3" aria-live="polite">
-          <SimBadge source={res.data_source} />
+          <div className="flex items-center gap-3">
+            <SimBadge source={res.data_source} />
+            {busy ? <span role="status" className="text-sm text-slate-600 dark:text-slate-400">{t('updating')}</span> : null}
+          </div>
           <SlotCarousel plan={res} selected={sel} onSelect={setSel} />
           {sel && res.slots[sel.slot]?.itineraries[sel.idx] ? (
             <RouteDetail it={res.slots[sel.slot].itineraries[sel.idx]} departAt={res.slots[sel.slot].depart_at} />
