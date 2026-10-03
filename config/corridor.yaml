@@ -10,7 +10,7 @@ gtfs:
 
 # Vehicle types and capacities (section 5.4). All are assumptions until verified.
 vehicle_types:
-  bus_ordinary: {mode: bus, capacity_seated: 40, capacity_total: 70}        # ASSUMPTION: verify against MTC specs
+  bus_ordinary: {mode: bus, capacity_seated: 48, capacity_total: 83}        # RTO permitted load for MTC buses (Wikipedia, MTC Chennai); >160 seen at peaks
   bus_ac:       {mode: bus, capacity_seated: 38, capacity_total: 55}        # ASSUMPTION
   mrts_9car:    {mode: mrts, capacity_seated: 1000, capacity_total: 2500}   # ASSUMPTION: verify
   metro_3car:   {mode: metro, capacity_seated: 350, capacity_total: 1100}   # ASSUMPTION: verify
@@ -72,7 +72,7 @@ routes:
     headway_profile: [["05:00","07:00",30],["07:00","10:30",15],["10:30","16:30",25],["16:30","20:30",15],["20:30","23:00",35]]
   - route_id: MRTS_BV
     short_name: "MRTS"
-    long_name: "Chennai Beach - Velachery (MRTS)"
+    long_name: "Chennai Beach - St. Thomas Mount (MRTS)"   # extended from Velachery on 14 Mar 2026
     mode: mrts
     operator: Southern Railway
     vehicle_type: mrts_9car
@@ -98,7 +98,14 @@ routes:
       - {stop_id: MRTS_TRMN,  name: "Taramani",         lat: 12.9810, lon: 80.2440}
       - {stop_id: MRTS_PRGD,  name: "Perungudi",        lat: 12.9670, lon: 80.2420}
       - {stop_id: MRTS_VLCY,  name: "Velachery",        lat: 12.9790, lon: 80.2210}
-    headway_profile: [["04:30","07:00",20],["07:00","10:30",12],["10:30","16:30",20],["16:30","20:30",12],["20:30","23:30",25]]  # ASSUMPTION (spec: 10-15 min)
+      # Velachery - St. Thomas Mount extension (Southern Railway, opened 14 Mar 2026). Adambakkam is
+      # built but trains skip it "for operational reasons", so it is not modelled.
+      - {stop_id: MRTS_PZV,   name: "Puzhuthivakkam",   lat: 12.97750, lon: 80.20444}
+      # ASSUMPTION: placed beside the metro station (integrated MRTS/metro terminal), as for Guindy
+      - {stop_id: MRTS_STM,   name: "St. Thomas Mount", lat: 12.99980, lon: 80.19750}
+    # 43 Beach - St. Thomas Mount pairs a day (Southern Railway, Mar 2026). The 2 Beach - Velachery and
+    # 3 Velachery - St. Thomas Mount short workings are not modelled. Split across the day: ASSUMPTION.
+    headway_profile: [["04:30","07:00",40],["07:00","10:30",15],["10:30","16:30",36],["16:30","20:30",20],["20:30","23:30",60]]
   - route_id: METRO_BLUE_S
     short_name: "Blue"
     long_name: "Metro Blue Line (Saidapet - Airport segment)"
@@ -141,6 +148,7 @@ stop_overrides:
 # Known interchanges (suburban rail / multi-line) that name heuristics miss
 stop_type_overrides:
   MRTS_VLCY: interchange
+  MRTS_STM: interchange
   MRTS_BEACH: interchange
   MRTS_PARK: interchange
   CMRL_22: interchange

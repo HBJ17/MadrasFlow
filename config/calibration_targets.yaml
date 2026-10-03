@@ -14,15 +14,23 @@ network:
 corridor:
   metro_station_share: 0.244             # = 10/41
   metro_daily_boardings: 83600           # = 342702 * 0.244, rounded
-  # ASSUMPTION: no published MRTS or MTC corridor counts found. Scaled relative to metro:
-  mrts_daily_boardings: 40000            # ASSUMPTION: about half of metro; MRTS is known to run below capacity
+  # MRTS: whole line is modelled (Beach - St. Thomas Mount). ~100,000/day line ridership (Wikipedia,
+  # Chennai MRTS, 2023, before the Mar 2026 extension, so likely conservative).
+  mrts_daily_boardings: 100000
+  # Station check (reported, not fitted): Velachery ~70,000/day (Wikipedia, 2026, unsourced there);
+  # Beach + Thirumayilai + Velachery ~40% of MRTS ridership (Wikipedia, 2012 figure).
+  mrts_station_footfall: {MRTS_VLCY: 70000}
+  mrts_top3_share: {stations: [MRTS_BEACH, MRTS_TMLI, MRTS_VLCY], share: 0.40}
+  # ASSUMPTION: no published MTC corridor counts found.
   # ASSUMPTION: the 4 modelled MTC routes stand in for many parallel route variants that are not
   # modelled, so their target is set by what their GTFS timetables can carry (busiest slots at a
   # demand load factor of about 1.3-1.4, not overloaded all day), not by the 70:30 bus:rail network
   # split. Chosen with scripts/dev/bus_sweep.py. Flag in the pitch.
   bus_daily_boardings: 24000
   weekday_weekend_ratio: 1.47            # = 1 / 0.68 weekend multiplier (ASSUMPTION, spec 0.6-0.75)
-  peak_hour_share: [0.40, 0.55]          # share of boardings 08-10 + 17-20 (ASSUMPTION to confirm)
+  peak_hours: [[7, 10], [17, 20]]        # 7-10 AM and 5-8 PM peaks (press reports on MTC/MRTS crowding)
+  peak_hour_share: [0.45, 0.60]          # ASSUMPTION: share of boardings in peak_hours (spec band 0.40-0.55 for
+                                         # 08-10 + 17-20, widened by 0.05 for the extra 07-08 hour)
   event_day_ratio: 1.2                   # matches metro peak-day/avg
 
 tolerances:

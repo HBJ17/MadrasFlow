@@ -18,7 +18,7 @@ from datetime import date, datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from common.config import REPORTS_DIR
+from common.config import REPORTS_DIR, peak_hours
 from db.database import query
 from twin.simulate import run
 
@@ -63,7 +63,7 @@ def day_metrics(ev, caps, modes):
     # over ~1,400 slots would be a single outlier)
     return {"crowded_vehicle_stops": int((lf >= 1.0).sum()), "left_behind": int(e.left_behind.sum()),
             "peak_lf_p90": round(float(peak.quantile(0.95)), 3),
-            "mean_peak_hour_lf": round(float(lf[e.ts.dt.hour.isin([8, 9, 18, 19])].mean()), 3)}
+            "mean_peak_hour_lf": round(float(lf[e.ts.dt.hour.isin(peak_hours())].mean()), 3)}
 
 
 def main(argv=None):

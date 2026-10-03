@@ -67,6 +67,12 @@ def demand_config() -> dict:
     return cfg
 
 
+def peak_hours() -> list[int]:
+    """Clock hours counted as peak (calibration_targets.yaml peak_hours, [from, to) pairs)."""
+    spans = load_yaml("calibration_targets.yaml")["corridor"]["peak_hours"]
+    return [h for a, b in spans for h in range(a, b)]
+
+
 def hhmm_to_min(s: str) -> int:
     h, m = s.split(":")
     return int(h) * 60 + int(m)

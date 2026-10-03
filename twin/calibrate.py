@@ -9,7 +9,7 @@ Each candidate runs 7 simulated weekdays + 2 weekend days (+ 1 event day), with 
 Objective: weighted sum of squared relative errors on
   (a) daily boardings per mode vs config/calibration_targets.yaml,
   (b) weekday/weekend ratio,
-  (c) peak-hour share (08-10 + 17-20) vs the middle of the target band,
+  (c) peak-hour share (calibration_targets peak_hours) vs the middle of the target band,
   (d) event-day multiplier (cricket_match day vs a baseline weekday).
 Stage A fits base_mode by proportional updates; stage B runs Nelder-Mead on (beta,
 peak_width_scale); stage A runs again at the end. Writes config/demand_fitted.yaml.
@@ -25,7 +25,7 @@ import pandas as pd
 import yaml
 from scipy.optimize import minimize
 
-from common.config import CONFIG_DIR, load_yaml
+from common.config import CONFIG_DIR, load_yaml, peak_hours
 from twin.simulate import run
 
 WEEKDAY0 = date(2026, 9, 14)   # a Monday; 7 weekdays from here (calendar effects are off)
@@ -67,7 +67,7 @@ def evaluate(params: dict, seed: int = 11, quick: bool = False) -> dict:
     wd_total = ev_wd.boardings.sum() / n_wd
     we_total = ev_we.boardings.sum() / service_date(ev_we).nunique()
     h = ev_wd.ts.dt.hour
-    peak_share = ev_wd.boardings[(h.between(8, 9)) | (h.between(17, 19))].sum() / ev_wd.boardings.sum()
+    peak_share = ev_wd.boardings[h.isin(peak_hours())].sum() / ev_wd.boardings.sum()
     out = {"by_mode": {k: round(float(v)) for k, v in by_mode.items()}, "weekday_total": round(float(wd_total)),
            "weekend_total": round(float(we_total)), "ratio": float(wd_total / max(1, we_total)),
            "peak_share": float(peak_share), "unmet_per_day": s_wd["unmet_demand"] / n_wd,

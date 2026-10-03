@@ -7,7 +7,7 @@ from routing.recommend import plan
 from tests.conftest import SIM_START
 
 PAIRS = [("6693", "8652"),         # Tambaram West -> Velachery (bus)
-         ("MRTS_VLCY", "MRTS_BEACH"),  # MRTS end to end
+         ("MRTS_STM", "MRTS_BEACH"),  # MRTS end to end (St. Thomas Mount extension)
          ("CMRL_26", "MRTS_TVMR"),     # Airport -> Thiruvanmiyur (metro + bus/MRTS)
          ("6662", "5908"),             # Tambaram East -> Thiruvanmiyur bus stand
          ("CMRL_20", "MRTS_PRGD")]     # Saidapet -> Perungudi
