@@ -72,9 +72,9 @@ class Planner:
         return nv[0]
 
     # ---------------------------------------------------------------- 1) earliest arrival
-    def earliest(self, origin):
-        best = {origin: 0.0}
-        pq = [(0.0, 0, origin)]
+    def earliest(self, origin, t0: float = 0.0):
+        best = {origin: t0}
+        pq = [(t0, 0, origin)]
         cnt = itertools.count(1)
         while pq:
             t, _, u = heapq.heappop(pq)
@@ -131,8 +131,8 @@ class Planner:
         return cands
 
     # ---------------------------------------------------------------- 3) exact re-timing
-    def retime(self, path, prefer_low):
-        t = 0.0
+    def retime(self, path, prefer_low, t0: float = 0.0):
+        t = t0
         legs, cur = [], None
         walk_min = 0.0
         for u, v in zip(path, path[1:]):
@@ -188,7 +188,7 @@ class Planner:
         segs = [s for l in rides for s in l["segments"]]
         crowd_total = float(sum(CROWD_F[s] for s in segs))
         return {
-            "legs": out_legs, "total_min": round(t, 1), "transfers": len(rides) - 1,
+            "legs": out_legs, "total_min": round(float(t - t0), 1), "transfers": len(rides) - 1,
             "worst_level": max(segs, key=lambda x: CROWD_F[x]), "crowd_score": round(crowd_total / max(len(segs), 1), 2),
             "crowd_total": round(crowd_total, 1), "walk_min": round(walk_min, 1),
             "fare": round(sum(l["fare"] for l in out_legs if l["kind"] == "ride"), 1),
