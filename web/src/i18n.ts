@@ -5,7 +5,7 @@ export type Lang = 'en' | 'ta'
 
 const dict = {
   en: {
-    app: 'Koottam', tagline: 'South Chennai crowd forecast', simulated: 'Simulated data',
+    app: 'MadrasFlow', tagline: 'South Chennai crowd forecast', simulated: 'Simulated data',
     simulatedLong: 'Numbers come from a calibrated simulation, not live passenger counts.',
     search: 'Search a stop or route', planTrip: 'Plan a trip', favourites: 'Saved stops', routes: 'Routes', nearby: 'Nearby stops',
     findNearby: 'Find stops near me', noFav: 'Tap ☆ on a stop to save it here.', lastUpdated: 'Offline · last updated',
@@ -31,7 +31,7 @@ const dict = {
     fare: 'Fare', updating: 'Updating…', pickStops: 'Pick both stops from the list', useStop: 'Choose a stop', useLocation: 'Use my location', wait: 'wait',
   },
   ta: {
-    app: 'கூட்டம்', tagline: 'தென் சென்னை கூட்ட முன்னறிவிப்பு', simulated: 'உருவகப்படுத்தப்பட்ட தரவு',
+    app: 'MadrasFlow', tagline: 'தென் சென்னை கூட்ட முன்னறிவிப்பு', simulated: 'உருவகப்படுத்தப்பட்ட தரவு',
     simulatedLong: 'இந்த எண்கள் ஒரு உருவகப்படுத்தலில் இருந்து வருகின்றன, நேரடி பயணிகள் எண்ணிக்கை அல்ல.',
     search: 'நிறுத்தம் அல்லது வழித்தடத்தைத் தேடுக', planTrip: 'பயணம் திட்டமிடு', favourites: 'சேமித்த நிறுத்தங்கள்', routes: 'வழித்தடங்கள்', nearby: 'அருகிலுள்ள நிறுத்தங்கள்',
     findNearby: 'என் அருகிலுள்ள நிறுத்தங்கள்', noFav: 'நிறுத்தத்தில் ☆ ஐ அழுத்திச் சேமிக்கவும்.', lastUpdated: 'இணைப்பு இல்லை · கடைசியாக புதுப்பித்தது',

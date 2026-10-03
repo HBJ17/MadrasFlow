@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Koottam — South Chennai crowd forecast',
-        short_name: 'Koottam',
+        name: 'MadrasFlow — South Chennai crowd forecast',
+        short_name: 'MadrasFlow',
         description: 'Crowd levels for buses, MRTS and metro in South Chennai (simulated demo data).',
         theme_color: '#0f766e',
         background_color: '#f8fafc',

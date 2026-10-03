@@ -1,4 +1,4 @@
-# Koottam — Public Transport Occupancy Predictor (South Chennai)
+# MadrasFlow — Public Transport Occupancy Predictor (South Chennai)
 
 A crowd-forecasting platform for one South Chennai corridor — **Tambaram · Velachery · Thiruvanmiyur**
 with the Guindy / St. Thomas Mount interchange — covering MTC buses, MRTS (Chennai Beach–St. Thomas Mount)
