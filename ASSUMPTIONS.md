@@ -68,6 +68,12 @@ Weather (Open-Meteo, 92 past days + 7 forecast days) and Tamil Nadu holidays (`h
 - Cyclone day (Cyclone Michaung pattern, Dec 2023: MTC suspended 1,000+ of ~3,861 buses, MRTS halted, metro kept running): MRTS suspended all day, bus trips ×1/1.35 (~26% cancelled), day total ×0.75, metro preference ×1.25, bus run times ×1.5 (heavy rain is reported to add 20–50 min to bus journeys), bus dispatch delay ×2. The halt and the bus cut follow the press reports; the multipliers are assumptions.
 - `data/events.csv` is a hand-made illustrative calendar (12 rows); dates and attendances are not verified.
 
+## Trip planner filters (config/accessibility.yaml)
+
+- Step-free access: metro stations assumed step-free (lifts and ramps); MRTS stations assumed not step-free. Per-stop corrections can be added once verified.
+- Low-floor buses: no route-level data, so every MTC route is "unknown". An accessible plan may still use a bus but is flagged "low-floor bus not guaranteed".
+- Women's option: bus fare ₹0 on the four modelled MTC ordinary routes (Vidiyal Payanam since 2021, extended as Vettri Payanam from 2 Oct 2026); MRTS and metro fares unchanged. After dark (19:00–06:00) walks are capped at 5 min and waits at 10 min (thresholds are assumptions).
+
 ## Forecasting, routing, advisories
 
 - **Target = demand load factor** `(onboard + left_behind) / capacity_total`. Onboard alone can never exceed capacity, so it cannot express "LF 1.3"; adding the people left behind does. CROWDED (≥ 1.0) therefore means "left full with people still waiting".

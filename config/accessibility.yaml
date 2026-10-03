@@ -1,0 +1,27 @@
+# Accessibility and fare-concession rules used by the trip planner's filters.
+
+step_free:
+  # ASSUMPTION: CMRL metro stations have lifts and ramps from street to platform.
+  metro: true
+  # ASSUMPTION: MRTS stations are elevated with stairs; lifts are missing or unreliable at most.
+  mrts: false
+  # Per-stop corrections once verified on site, e.g. MRTS_VLCY: true
+  stop_overrides: {}
+
+# Low-floor (kneeling / ramp) buses. true = guaranteed, false = never, unknown = not guaranteed.
+# ASSUMPTION: no route-level data on MTC's low-floor fleet, so every route is "unknown": an
+# accessible plan may still use a bus, flagged "low-floor bus not guaranteed".
+low_floor_bus:
+  default: unknown
+  routes: {}
+
+women:
+  # Free travel for women and transgender persons on MTC ordinary town buses (Vidiyal Payanam,
+  # 2021; extended as Vettri Payanam from 2 Oct 2026). The four modelled MTC routes are ordinary
+  # services. MRTS and metro fares are unchanged.
+  free_bus_routes: [BUS_51R, BUS_95, BUS_S97, BUS_M70]
+  # After dark the planner keeps walks and waits short (ASSUMPTION: thresholds).
+  after_dark_from: "19:00"
+  after_dark_to: "06:00"
+  after_dark_max_walk_min: 5
+  after_dark_max_wait_min: 10
