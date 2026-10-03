@@ -57,6 +57,25 @@ def init_schema(drop: bool = False) -> None:
             for stmt in sql.split(";"):
                 if stmt.strip():
                     c.exec_driver_sql(stmt)
+    migrate()
+
+
+# Columns added after the first release; init_schema/migrate add them to an existing database.
+ADDED_COLUMNS = {"advisory": {"kind": "TEXT DEFAULT 'add_trips'"}}
+
+
+def migrate() -> None:
+    eng = engine()
+    if eng.url.get_backend_name() != "sqlite":
+        return
+    with eng.begin() as c:
+        for table, cols in ADDED_COLUMNS.items():
+            have = {r[1] for r in c.exec_driver_sql(f"PRAGMA table_info({table})").fetchall()}
+            if not have:
+                continue
+            for col, decl in cols.items():
+                if col not in have:
+                    c.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {col} {decl}")
 
 
 def query(sql: str, params: dict | None = None) -> pd.DataFrame:

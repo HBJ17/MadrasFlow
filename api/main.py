@@ -40,6 +40,9 @@ def _optional_routers():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from db.database import migrate
+
+    migrate()
     sched = None
     if os.environ.get("DISABLE_SCHEDULER") != "1":
         try:

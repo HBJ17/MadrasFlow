@@ -103,7 +103,8 @@ CREATE TABLE IF NOT EXISTS advisory (
   reason TEXT, action TEXT, extra_trips INT, expected_lf_before REAL, expected_lf_after REAL,
   direction INT, neighbour_lf_after REAL, extra_vehicle_hours REAL,
   status TEXT DEFAULT 'active' CHECK (status IN ('active','accepted','dismissed','rejected_by_whatif')),
-  data_source TEXT
+  data_source TEXT,
+  kind TEXT DEFAULT 'add_trips'       -- add_trips | short_turn | move_bus | hold_for_train
 );
 
 -- Twin runs and unmet demand (logged separately for the pitch)

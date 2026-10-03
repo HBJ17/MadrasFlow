@@ -19,6 +19,7 @@ import math
 import numpy as np
 import pandas as pd
 
+from advisory import rules
 from advisory.whatif import simulate_whatif
 from common import clock
 from common.config import IST, corridor, iso
@@ -29,12 +30,20 @@ MIN_SLOTS = 2
 MAX_EXTRA_PER_HOUR = 6
 
 
-def detect(now: pd.Timestamp | None = None) -> list[dict]:
+def latest_lstm() -> pd.DataFrame:
     m = query("SELECT MAX(made_at) m FROM forecast WHERE model='lstm'").m.iloc[0]
     if m is None:
-        return []
+        return pd.DataFrame()
     f = query("SELECT * FROM forecast WHERE made_at = :m AND model = 'lstm'", {"m": m})
     f["slot"] = pd.to_datetime(f.target_slot, utc=True).dt.tz_convert(IST)
+    return f
+
+
+def detect(now: pd.Timestamp | None = None) -> list[dict]:
+    f = latest_lstm()
+    if not len(f):
+        return []
+    m = f.made_at.iloc[0]
     f["flag"] = (f.pred_lf >= 1.0) | ((f.pred_lf >= 0.85) & (f.hi >= 1.1))
     stops = query("SELECT stop_id, name FROM stop").set_index("stop_id").name
     wins = []
@@ -82,6 +91,7 @@ def run_advisories(now: pd.Timestamp | None = None, seed: int = 7, verify: bool 
     now = pd.Timestamp(now or clock.now()).tz_convert(IST)
     depots = {r["route_id"]: r.get("depot") for r in corridor()["routes"]}
     out = []
+    fc = latest_lstm()
     for w in detect(now):
         # skip windows already covered by an active/accepted advisory
         dup = query("SELECT advisory_id FROM advisory WHERE route_id = :r AND direction = :d AND status IN "
@@ -122,10 +132,17 @@ def run_advisories(now: pd.Timestamp | None = None, seed: int = 7, verify: bool 
                       f"(headway {p['headway']:.0f} -> {p['headway'] * p['scheduled_trips'] / (p['scheduled_trips'] + n):.0f} min)",
             "extra_trips": int(n), "expected_lf_before": lf_before, "expected_lf_after": lf_after,
             "neighbour_lf_after": nb_after, "extra_vehicle_hours": veh_hours, "status": status,
-            "data_source": w["data_source"],
+            "data_source": w["data_source"], "kind": "add_trips",
         }
-        pd.DataFrame([rec]).to_sql("advisory", engine(), if_exists="append", index=False)
+        rows = [rec]
+        ctx = {**rec, "_start": start, "_end": end, "_cycle_min": rt * 2 + 20}
+        for rule in (rules.short_turn, rules.move_bus):
+            extra = rule(fc, w, ctx)
+            if extra:
+                rows.append({k: v for k, v in extra.items() if not k.startswith("_")})
+        pd.DataFrame(rows).to_sql("advisory", engine(), if_exists="append", index=False)
         out.append({**rec, "whatif": result["table"] if result else None})
+        out.extend(rows[1:])
     return out
 
 

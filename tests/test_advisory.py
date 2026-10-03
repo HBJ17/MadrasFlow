@@ -38,10 +38,14 @@ def test_advisory_verified_by_whatif(seeded_db):
     _force_overload(now)
     execute("DELETE FROM advisory")
     out = headway.run_advisories(now, seed=123)
-    assert len(out) == 1
-    a = out[0]
+    adds = [x for x in out if x["kind"] == "add_trips"]
+    assert len(adds) == 1
+    a = adds[0]
     assert a["expected_lf_after"] is not None and a["expected_lf_before"] is not None
     if a["status"] == "active":
         assert a["expected_lf_after"] < 1.0
     assert a["expected_lf_after"] <= a["expected_lf_before"]
-    assert query("SELECT COUNT(*) n FROM advisory").n[0] == 1
+    assert query("SELECT COUNT(*) n FROM advisory").n[0] == len(out)
+    # crowding sits on stops 5-15 of ~33, so a short-turn is offered too, at lower cost
+    st = [x for x in out if x["kind"] == "short_turn"]
+    assert len(st) == 1 and st[0]["extra_vehicle_hours"] < a["extra_vehicle_hours"]
