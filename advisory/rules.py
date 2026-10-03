@@ -4,6 +4,8 @@ forecast window and returns a ready-to-store advisory row with a plain-language 
   short_turn  crowding only on the first part of the route: run short trips that turn back after the
               crowded section instead of full trips (same added capacity where it is needed, less cost)
   move_bus    a bus route sharing a station stays quiet through the window: move a bus from it
+  hold_for_train  a bus fills up sharply at a metro/MRTS station: hold it a couple of minutes so it
+              leaves after the train arrives (passengers transferring off the train get on)
 
 Neither rule runs its own twin test. A short-turn adds the same capacity on the crowded section as
 the twin-tested extra trips, so it reuses that result; a moved bus is estimated from the forecast.
@@ -20,6 +22,9 @@ from db.database import query
 
 SHORT_TURN_MAX_SHARE = 0.6   # crowded stops all within the first 60% of the route
 QUIET_LF = 0.30              # a donor route stays below this load in every slot of the window
+JUMP_LF = 0.35               # load rises by at least this much at the station ...
+JUMP_MIN_LF = 0.75           # ... to at least HIGH, for at least two consecutive slots
+HOLD_MIN = 2
 
 
 def _route(rid: str):
@@ -88,3 +93,44 @@ def move_bus(fc: pd.DataFrame, w: dict, base: dict) -> dict | None:
             "action": f"move 1 bus from {donor.short_name} to {target.short_name} between {base['_start']} and {base['_end']}",
             "extra_trips": max(1, math.floor(hours * 60 / max(base.get('_cycle_min', 60), 1))),
             "extra_vehicle_hours": 0.0, "neighbour_lf_after": None if donor_after is None else round(donor_after, 3)}
+
+
+def hold_for_train(fc: pd.DataFrame, now: pd.Timestamp, depots: dict) -> list[dict]:
+    """Bus stops at rail stations where the bus fills up sharply for 2+ consecutive slots."""
+    if not len(fc):
+        return []
+    rail = set(query("SELECT DISTINCT station_id FROM stop WHERE mode IN ('mrts','metro')").station_id)
+    out = []
+    for (rid, d), g in fc.groupby(["route_id", "direction"]):
+        r = _route(rid)
+        if r["mode"] != "bus":
+            continue
+        st = query("SELECT rs.seq, rs.stop_id, s.name, s.station_id FROM route_stop rs JOIN stop s ON s.stop_id = rs.stop_id "
+                   "WHERE rs.route_id = :r AND rs.direction = :d ORDER BY rs.seq", {"r": rid, "d": int(d)})
+        lf = g.pivot_table(index="stop_id", columns="slot", values="pred_lf")
+        for i in range(1, len(st) - 1):
+            stop, prev = st.stop_id.iloc[i], st.stop_id.iloc[i - 1]
+            if st.station_id.iloc[i] not in rail or stop not in lf.index or prev not in lf.index:
+                continue
+            jump = (lf.loc[stop] - lf.loc[prev] >= JUMP_LF) & (lf.loc[stop] >= JUMP_MIN_LF)
+            run = 0
+            best = None
+            for k, t in enumerate(lf.columns):
+                run = run + 1 if bool(jump.get(t, False)) else 0
+                if run >= 2:
+                    best = (lf.columns[k - run + 1], t)
+            if not best:
+                continue
+            a, b = best
+            b = b + pd.Timedelta(minutes=15)
+            top = float(lf.loc[stop, a:b].max())
+            out.append({"created_at": iso(now), "route_id": rid, "depot": depots.get(rid), "direction": int(d),
+                        "slot_start": iso(a), "slot_end": iso(b), "kind": "hold_for_train",
+                        "reason": f"{r.short_name} fills from {lf.loc[prev, a:b].max():.0%} to {top:.0%} at {st.name.iloc[i]} "
+                                  f"(rail interchange) between {a.tz_convert(IST):%H:%M} and {b.tz_convert(IST):%H:%M}",
+                        "action": f"hold {r.short_name} {HOLD_MIN} min at {st.name.iloc[i]} to meet arriving trains "
+                                  f"between {a.tz_convert(IST):%H:%M} and {b.tz_convert(IST):%H:%M}",
+                        "extra_trips": 0, "expected_lf_before": round(top, 3), "expected_lf_after": None,
+                        "neighbour_lf_after": None, "extra_vehicle_hours": 0.0, "status": "active",
+                        "data_source": g.data_source.iloc[0]})
+    return out

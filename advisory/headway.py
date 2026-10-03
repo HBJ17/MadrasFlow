@@ -143,6 +143,13 @@ def run_advisories(now: pd.Timestamp | None = None, seed: int = 7, verify: bool 
         pd.DataFrame(rows).to_sql("advisory", engine(), if_exists="append", index=False)
         out.append({**rec, "whatif": result["table"] if result else None})
         out.extend(rows[1:])
+    for h in rules.hold_for_train(fc, now, depots):
+        dup = query("SELECT advisory_id FROM advisory WHERE route_id = :r AND direction = :d AND kind = 'hold_for_train' "
+                    "AND status IN ('active','accepted') AND slot_start < :e AND slot_end > :s",
+                    {"r": h["route_id"], "d": h["direction"], "s": h["slot_start"], "e": h["slot_end"]})
+        if not len(dup):
+            pd.DataFrame([h]).to_sql("advisory", engine(), if_exists="append", index=False)
+            out.append(h)
     return out
 
 
