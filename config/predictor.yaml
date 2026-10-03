@@ -1,0 +1,15 @@
+# Forecast serving and live correction (sections 7.4, 7.6)
+serve:
+  interval_min: 5            # scheduler period in demo mode
+  history_days: 8            # look-back for features (needs >= 7 for same-slot-last-week)
+  keep_hours: 3              # forecast rows older than this are pruned, except the 1-h-ahead ones
+  keep_eval_hours: 26        # 1-h-ahead forecasts kept for the 24 h accuracy panel
+  models: [lstm, baseline, prophet]
+live_correction:
+  kalman_gain: {camera_vehicle: 0.5, camera_stop: 0.3, twin: 0.6, afc_real: 0.7}   # ASSUMPTION: sensor reliability
+  rho: 0.7
+  max_slots: 3
+  downstream_stops: 4
+  stale_after_min: 10
+stream:
+  release_every_s: 30        # twin streaming mode: release simulated events as the clock passes them
