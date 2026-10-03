@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/* Crowd-level colours: always paired with a text label (colour is never the only signal).
+   Text/background pairs meet WCAG AA contrast. */
+@theme {
+  --color-brand: #0f766e;
+  --color-brand-ink: #134e4a;
+  --color-low: #15803d;
+  --color-medium: #facc15;
+  --color-high: #fb923c;
+  --color-crowded: #b91c1c;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Tamil", "Latha", sans-serif;
+}
+
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+:root { color-scheme: light dark; }
+body { @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased; }
+a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #0ea5e9; outline-offset: 2px; border-radius: 6px; }
+
+.lvl-LOW { background: var(--color-low); color: #fff; }
+.lvl-MEDIUM { background: var(--color-medium); color: #1c1917; }
+.lvl-HIGH { background: var(--color-high); color: #1c1917; }
+.lvl-CROWDED { background: var(--color-crowded); color: #fff; }
+.lvl-none { background: #cbd5e1; color: #1e293b; }
+.bar-LOW { background: var(--color-low); }
+.bar-MEDIUM { background: var(--color-medium); }
+.bar-HIGH { background: var(--color-high); }
+.bar-CROWDED { background: var(--color-crowded); }
+
+@utility tap { min-height: 44px; min-width: 44px; }
+@utility card { @apply rounded-2xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-200 dark:ring-slate-800; }
+@utility btn { @apply tap inline-flex items-center justify-center gap-2 rounded-xl px-4 font-medium transition; }
+@utility btn-primary { @apply btn bg-brand text-white hover:bg-brand-ink disabled:opacity-60; }
+@utility btn-ghost { @apply btn ring-1 ring-slate-300 dark:ring-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800; }
+@utility input { @apply tap w-full rounded-xl bg-white dark:bg-slate-900 px-3 ring-1 ring-slate-300 dark:ring-slate-700 focus:ring-2 focus:ring-brand outline-none; }
+@utility seg { @apply tap flex-1 rounded-lg px-3 text-sm font-medium; }
+.seg[aria-pressed="true"] { background: var(--color-brand); color: #fff; }
+
+/* Chart axis labels follow the theme (series colours are set in Depot.tsx) */
+:root { --c-axis: #475569; }
+@media (prefers-color-scheme: dark) {
+  :root { --c-axis: #cbd5e1; }
+}
+.recharts-cartesian-axis-tick-value { fill: var(--c-axis); }
+.recharts-tooltip-wrapper .recharts-default-tooltip { background: #0f172a !important; color: #f8fafc; border-color: #334155 !important; }
