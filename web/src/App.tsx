@@ -30,9 +30,6 @@ function Header() {
         <span className="flex-1" />
         <ThemeToggle />
         <LangToggle />
-        <Link to={depot ? '/' : '/depot'} className="tap flex shrink-0 items-center whitespace-nowrap rounded-full px-2 font-display sm:px-3 text-sm font-semibold text-[#002046] transition-colors hover:bg-slate-100 dark:text-navy-soft dark:hover:bg-white/10">
-          {depot ? t('commuter') : <><span className="sm:hidden">{t('depotShort')}</span><span className="hidden sm:inline">{t('depot')}</span></>}
-        </Link>
       </div>
     </header>
   )
