@@ -4,7 +4,6 @@ import { Link, useLocation } from './router'
 import { LangContext, type Lang, useT } from './i18n'
 import { Icon, Spinner } from './components'
 import { setDark, useDark } from './theme'
-import Home from './pages/Home'
 import RouteView from './pages/RouteView'
 import StopView from './pages/StopView'
 import Planner from './pages/Planner'
@@ -78,7 +77,7 @@ function Routes() {
   if (seg[0] === 'plan') return <Planner />
   if (seg[0] === 'vehicle' && seg[1]) return <VehicleView vehicleId={decodeURIComponent(seg[1])} />
   if (seg[0] === 'depot') return <Suspense fallback={<Spinner />}><Depot /></Suspense>
-  return <Home />
+  return <Planner />
 }
 
 export default function App() {

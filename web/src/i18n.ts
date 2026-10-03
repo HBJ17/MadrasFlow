@@ -29,6 +29,7 @@ const dict = {
     free_bus_women: 'Bus free for women', low_floor: 'Low-floor bus not guaranteed', after_dark: 'After dark: short walks and waits',
     routeMap: 'Route on the map', mapOffline: 'Map unavailable offline. The steps below still work.', prevSlot: 'Earlier departure', nextSlot: 'Later departure',
     fare: 'Fare', updating: 'Updating…', pickStops: 'Pick both stops from the list', useStop: 'Choose a stop', useLocation: 'Use my location', wait: 'wait',
+    hello: 'Hello Traveller!', starTrip: 'Star this trip', unstarTrip: 'Remove star', starred: 'Starred trips', starHint: 'Pick a start and end, then tap ☆ to keep the trip here.',
   },
   ta: {
     app: 'MadrasFlow', tagline: 'தென் சென்னை கூட்ட முன்னறிவிப்பு', simulated: 'உருவகப்படுத்தப்பட்ட தரவு',
@@ -55,6 +56,7 @@ const dict = {
     free_bus_women: 'பெண்களுக்கு பேருந்து இலவசம்', low_floor: 'தாழ்தளப் பேருந்து உறுதி இல்லை', after_dark: 'இரவு: குறைந்த நடை, காத்திருப்பு',
     routeMap: 'வழி வரைபடம்', mapOffline: 'இணைப்பு இல்லாததால் வரைபடம் இல்லை. கீழே உள்ள படிகள் வேலை செய்யும்.', prevSlot: 'முந்தைய புறப்பாடு', nextSlot: 'அடுத்த புறப்பாடு',
     fare: 'கட்டணம்', updating: 'புதுப்பிக்கிறது…', pickStops: 'இரண்டு நிறுத்தங்களையும் பட்டியலில் இருந்து தேர்ந்தெடுக்கவும்', useStop: 'நிறுத்தத்தைத் தேர்ந்தெடு', useLocation: 'என் இடத்தைப் பயன்படுத்து', wait: 'காத்திருப்பு',
+    hello: 'வணக்கம் பயணி!', starTrip: 'இந்தப் பயணத்தைச் சேமி', unstarTrip: 'சேமிப்பை நீக்கு', starred: 'சேமித்த பயணங்கள்', starHint: 'தொடக்கம், முடிவைத் தேர்ந்தெடுத்து ☆ தட்டி இங்கே சேமிக்கவும்.',
   },
 } as const
 

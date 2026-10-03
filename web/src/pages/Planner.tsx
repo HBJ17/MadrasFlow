@@ -20,9 +20,16 @@ function loadPrefs(): Partial<Prefs> {
   try { return JSON.parse(localStorage.getItem(PREFS) || '{}') } catch { return {} }
 }
 
+// Starred start/end pairs, kept on this device.
+const STARS = 'mf-starred-trips'
+interface Star { from: string; from_name: string; to: string; to_name: string }
+function loadStars(): Star[] {
+  try { return JSON.parse(localStorage.getItem(STARS) || '[]') } catch { return [] }
+}
+
 export default function Planner() {
   const t = useT()
-  const { params } = useLocation()
+  const { path, params } = useLocation()
   const stops = usePolling<StopInfo[]>('/stops', 3600_000)
   const list = stops.data ?? []
   const initFrom = list.find((s) => s.stop_id === params.get('from')) ?? null
@@ -39,6 +46,15 @@ export default function Planner() {
   const [sel, setSel] = useState<Selection | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [stars, setStars] = useState<Star[]>(loadStars)
+  const [preset, setPreset] = useState<{ from: StopInfo; to: StopInfo; n: number } | null>(null)   // a starred trip loaded into the form
+  useEffect(() => { try { localStorage.setItem(STARS, JSON.stringify(stars)) } catch { /* storage may be unavailable */ } }, [stars])
+  const starred = !!origin && !!to && stars.some((x) => x.from === origin.stop_id && x.to === to.stop_id)
+  const toggleStar = () => {
+    if (!origin || !to) return
+    setStars(starred ? stars.filter((x) => !(x.from === origin.stop_id && x.to === to.stop_id))
+      : [{ from: origin.stop_id, from_name: origin.name, to: to.stop_id, to_name: to.name }, ...stars])
+  }
 
   useEffect(() => {
     getJSON<{ now: string }>('/health').then(({ data }) => {
@@ -57,8 +73,9 @@ export default function Planner() {
     return () => window.clearTimeout(h)
   }, [win, rank, filters]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const submit = async (e?: React.FormEvent) => {
+  const submit = async (e?: React.FormEvent, origin_ = origin, to_ = to) => {
     e?.preventDefault()
+    const origin = origin_, to = to_
     if (!origin || !to) { setErr(t('pickStops')); return }
     setBusy(true); setErr(null)
     try {
@@ -72,15 +89,28 @@ export default function Planner() {
     } catch (x) { setErr(String((x as Error).message)) } finally { setBusy(false) }
   }
 
+  // Load a starred trip into the form and search it straight away.
+  const loadStar = (x: Star) => {
+    const f = list.find((s) => s.stop_id === x.from), d = list.find((s) => s.stop_id === x.to)
+    if (!f || !d) return
+    const o: Origin = { stop_id: f.stop_id, name: f.name, walk_min: 0, gps: false }
+    setPreset({ from: f, to: d, n: (preset?.n ?? 0) + 1 })
+    setOrigin(o); setTo(d)
+    submit(undefined, o, d)
+  }
+
   return (
     <div className="space-y-4">
-      <BackButton label={t('back')} />
-      <h1 className="text-[28px] font-bold leading-tight text-[#002046] dark:text-navy-soft">{t('planTrip')}</h1>
+      {path === '/plan' ? <BackButton label={t('back')} /> : null}
+      <div className="space-y-1 pt-1">
+        <p className="font-display text-[40px] font-bold leading-[1.05] tracking-[-0.03em] text-[#002046] sm:text-5xl dark:text-navy-soft">{t('hello')}</p>
+        <h1 className="ledger text-xs">{t('planTrip')}</h1>
+      </div>
       <form onSubmit={submit} className="card space-y-4 p-4">
         {list.length ? (
           <>
-            <LocationField key={`f-${initFrom?.stop_id}`} stops={list} initialStop={initFrom} onChange={setOrigin} />
-            <StopPicker id="to" label={t('to')} stops={list} value={to} onChange={setTo} />
+            <LocationField key={preset ? `p-${preset.n}` : `f-${initFrom?.stop_id}`} stops={list} initialStop={preset?.from ?? initFrom} onChange={setOrigin} />
+            <StopPicker key={`to-${preset?.n ?? 0}`} id="to" label={t('to')} stops={list} value={to} onChange={setTo} />
           </>
         ) : <p className="ledger">{t('loading')}</p>}
         <WindowStepper time={time} onTime={setTime} window={win} onWindow={setWin} />
@@ -89,10 +119,37 @@ export default function Planner() {
           <button type="button" className="btn-ghost" onClick={() => setSheet(true)} aria-haspopup="dialog">
             <Icon name="tune" className="h-4 w-4" /> {t('filters')}{activeFilterCount(filters) ? <span className="rounded-md bg-lime px-1.5 font-mono text-xs font-bold text-lime-ink">{activeFilterCount(filters)}</span> : null}
           </button>
+          <button type="button" className={`btn-ghost w-11 shrink-0 px-0 ${starred ? 'text-amber-700 dark:text-amber-300' : ''}`} onClick={toggleStar}
+            disabled={!origin || !to} aria-pressed={starred} aria-label={starred ? t('unstarTrip') : t('starTrip')} title={starred ? t('unstarTrip') : t('starTrip')}>
+            <Icon name={starred ? 'star' : 'starOutline'} className="h-5 w-5" />
+          </button>
           <button className="btn-primary flex-1" disabled={busy}>{busy ? t('loading') : t('go')}</button>
         </div>
         {err ? <p role="alert" className="text-sm text-red-700 dark:text-red-400">{err}</p> : null}
       </form>
+      <section aria-labelledby="stars-h" className="space-y-2">
+        <h2 id="stars-h" className="ledger flex items-center gap-1.5"><Icon name="star" className="h-3.5 w-3.5 text-amber-700 dark:text-amber-300" />{t('starred')}</h2>
+        {stars.length ? (
+          <ul className="card divide-y divide-slate-200 overflow-hidden dark:divide-white/5">
+            {stars.map((x) => (
+              <li key={`${x.from}|${x.to}`} className="flex items-center">
+                <button type="button" onClick={() => loadStar(x)} className="tap flex min-w-0 flex-1 items-center gap-2 px-4 py-2.5 text-left transition hover:bg-slate-100 dark:hover:bg-[#1f232d]">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-display font-semibold text-[#002046] dark:text-navy-soft">{x.from_name}</span>
+                    <span className="block truncate text-sm text-slate-600 dark:text-slate-300">→ {x.to_name}</span>
+                  </span>
+                  <span aria-hidden className="text-slate-500">›</span>
+                </button>
+                <button type="button" className="tap mr-1 flex items-center justify-center rounded-full text-amber-700 hover:bg-slate-100 dark:text-amber-300 dark:hover:bg-white/5"
+                  aria-label={`${t('unstarTrip')}: ${x.from_name} → ${x.to_name}`} title={t('unstarTrip')}
+                  onClick={() => setStars(stars.filter((y) => y !== x))}>
+                  <Icon name="star" className="h-5 w-5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : <p className="rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm text-slate-600 dark:border-white/10 dark:text-slate-400">{t('starHint')}</p>}
+      </section>
       <FilterSheet open={sheet} value={filters} defaults={DEFAULT_FILTERS} onClose={() => setSheet(false)} onApply={setFilters} />
       {res ? (
         <section className="space-y-3" aria-live="polite">
