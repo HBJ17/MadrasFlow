@@ -17,14 +17,23 @@ _lock = threading.Lock()
 
 
 def _release():
-    from twin.stream import release
+    from twin.stream import ensure_today, release
 
     try:
+        if not service_day_ready():
+            log.info("stream: new day %s", ensure_today())   # the demo clock has passed midnight
         n = release()
         if n:
             log.info("stream: released %d twin events", n)
     except Exception:
         log.exception("stream release failed")
+
+
+def service_day_ready() -> bool:
+    from common import clock
+    from twin.stream import _path, service_day
+
+    return _path(service_day(clock.now())).exists()
 
 
 def _forecast():

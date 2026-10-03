@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 from .config import IST, hhmm_to_min
 
 _T0_REAL = _time.time()
+# The demo day is fixed when the server starts, so the clock does not jump a day at real midnight.
+_START_DAY = datetime.now(IST).replace(hour=0, minute=0, second=0, microsecond=0)
 
 
 def now() -> datetime:
@@ -18,5 +20,5 @@ def now() -> datetime:
     if not start:
         return real
     speed = float(os.environ.get("DEMO_CLOCK_SPEED", "1"))
-    base = real.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(minutes=hhmm_to_min(start))
+    base = _START_DAY + timedelta(minutes=hhmm_to_min(start))
     return base + timedelta(seconds=(_time.time() - _T0_REAL) * speed)

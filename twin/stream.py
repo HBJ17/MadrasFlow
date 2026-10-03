@@ -14,7 +14,7 @@ import pandas as pd
 
 from common import clock
 from common.config import IST, PROCESSED_DIR, iso
-from db.database import query, write_events
+from db.database import execute, query, write_events
 from twin.simulate import run, to_db
 
 log = logging.getLogger("twin.stream")
@@ -26,7 +26,7 @@ def _path(d: date):
 
 
 def ensure_today(seed: int = 7, scenario: str = "baseline") -> dict:
-    today = clock.now().date()
+    today = service_day(clock.now())
     last = query("SELECT MAX(ts) m FROM event WHERE source='twin' AND run_id NOT LIKE 'stream-%'").m.iloc[0]
     filled = []
     if last:
@@ -38,6 +38,8 @@ def ensure_today(seed: int = 7, scenario: str = "baseline") -> dict:
                         run_id=f"backfill-{d:%Y%m%d}-{days}d")
             to_db(ev, s)
             filled = [str(d + timedelta(days=i)) for i in range(days)]
+            for i in range(days):   # a back-filled full day replaces that day's partial stream rows
+                execute("DELETE FROM event WHERE run_id = :r", {"r": f"stream-{d + timedelta(days=i):%Y%m%d}"})
     p = _path(today)
     run_id = f"stream-{today:%Y%m%d}"
     if not p.exists():
@@ -51,10 +53,16 @@ def ensure_today(seed: int = 7, scenario: str = "baseline") -> dict:
     return {"today": str(today), "stream_file": p.name, "backfilled_days": filled}
 
 
+def service_day(now) -> date:
+    """Trips running after midnight (until 03:00) belong to the previous service day."""
+    now = pd.Timestamp(now).tz_convert(IST)
+    return (now - pd.Timedelta(hours=3)).date() if now.hour < 3 else now.date()
+
+
 def release(now: pd.Timestamp | None = None) -> int:
     """Insert today's twin events with ts <= now that are not in the DB yet. Returns rows inserted."""
     now = pd.Timestamp(now or clock.now()).tz_convert(IST)
-    today = (now - pd.Timedelta(hours=3)).date() if now.hour < 3 else now.date()
+    today = service_day(now)
     p = _path(today)
     if not p.exists():
         return 0
