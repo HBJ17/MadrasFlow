@@ -37,7 +37,7 @@ def static() -> Static:
     s = _STATIC.get("s")
     if s and time.time() - s.loaded < 600:
         return s
-    rs = query("""SELECT rs.route_id, rs.direction, rs.seq, rs.stop_id, rs.run_min, st.station_id, st.name,
+    rs = query("""SELECT rs.route_id, rs.direction, rs.seq, rs.stop_id, rs.run_min, rs.dist_from_prev_m, st.station_id, st.name,
                          st.lat, st.lon, r.mode, r.short_name, r.capacity_total
                   FROM route_stop rs JOIN stop st ON st.stop_id = rs.stop_id JOIN route r ON r.route_id = rs.route_id
                   ORDER BY rs.route_id, rs.direction, rs.seq""")

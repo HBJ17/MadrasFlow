@@ -21,6 +21,7 @@ import pandas as pd
 from common import clock
 from common.config import IST, iso
 from routing.graph import CROWD_F, build, level_of, lf_at
+from twin.paths import fare_for
 
 OPTIONS = {"fastest": 0.0, "balanced": 1.0, "least_crowded": 3.0}
 PREFER_LOW_W = 5.0
@@ -42,6 +43,10 @@ class Planner:
         self.names = dict(zip(rs.stop_id, rs.name))
         self.station_of_stop = dict(zip(rs.stop_id, rs.station_id))
         self.station_name = dict(zip(self.st.stations.station_id, self.st.stations.name))
+        self.station_xy = {s.station_id: (round(float(s.lon), 5), round(float(s.lat), 5)) for s in self.st.stations.itertuples(index=False)}
+        self.stop_xy = {(r.route_id, r.direction, r.seq): (round(float(r.lon), 5), round(float(r.lat), 5)) for r in rs.itertuples(index=False)}
+        self.seq_list = {k: sorted(int(s) for s in g.seq) for k, g in rs.groupby(["route_id", "direction"])}
+        self.seg_km = {(r.route_id, r.direction, r.seq): float(r.dist_from_prev_m or 0) / 1000 for r in rs.itertuples(index=False)}
 
     # ---------------------------------------------------------------- timetable helpers
     def next_vehicles(self, r, d, seq, t, n=3):
@@ -136,7 +141,7 @@ class Planner:
                 walk_min += e["walk"]
                 t += e["walk"]  # the transfer penalty is a cost, not time
                 legs.append({"kind": "walk", "from": self.station_name[u[1]], "to": self.station_name[v[1]],
-                             "minutes": round(e["walk"], 1)})
+                             "minutes": round(e["walk"], 1), "path": [self.station_xy[u[1]], self.station_xy[v[1]]]})
             elif e["kind"] == "board":
                 ch = self.board_choice(v[1], v[2], v[3], t, prefer_low)
                 if ch is None:
@@ -168,6 +173,8 @@ class Planner:
             r, d = l["route_id"], l["direction"]
             worst = max(l["segments"], key=lambda x: CROWD_F[x])
             fs, ts_ = self.stop_of[(r, d, l["from_seq"])], self.stop_of[(r, d, l["to_seq"])]
+            seqs = [s for s in self.seq_list[(r, d)] if l["from_seq"] <= s <= l["to_seq"]]
+            km = sum(self.seg_km[(r, d, s)] for s in seqs[1:])
             out_legs.append({
                 "kind": "ride", "mode": m.mode, "route_id": r, "route": m.short_name, "direction": d,
                 "from_stop": fs, "from": self.names[fs], "to_stop": ts_, "to": self.names[ts_],
@@ -175,7 +182,8 @@ class Planner:
                 "alight_at": iso(self.now + pd.Timedelta(minutes=l["start"] + self.cum[(r, d, l["to_seq"])])),
                 "wait_min": l["wait_min"], "minutes": round(l["start"] + self.cum[(r, d, l["to_seq"])] - l["board_t"], 1),
                 "stops": l["to_seq"] - l["from_seq"], "vehicle_id": l["vehicle_id"], "trip_id": l["trip_id"],
-                "level": worst, "levels": l["segments"],
+                "level": worst, "levels": l["segments"], "km": round(km, 1), "fare": round(fare_for(m.mode, km), 1),
+                "path": [self.stop_xy[(r, d, s)] for s in seqs],   # one level per consecutive pair of points
             })
         segs = [s for l in rides for s in l["segments"]]
         crowd_total = float(sum(CROWD_F[s] for s in segs))
@@ -183,6 +191,7 @@ class Planner:
             "legs": out_legs, "total_min": round(t, 1), "transfers": len(rides) - 1,
             "worst_level": max(segs, key=lambda x: CROWD_F[x]), "crowd_score": round(crowd_total / max(len(segs), 1), 2),
             "crowd_total": round(crowd_total, 1), "walk_min": round(walk_min, 1),
+            "fare": round(sum(l["fare"] for l in out_legs if l["kind"] == "ride"), 1),
             "arrive_at": iso(self.now + pd.Timedelta(minutes=t)),
             "signature": tuple((l["route_id"], l["from_seq"], l.get("to_seq")) for l in rides),
         }
