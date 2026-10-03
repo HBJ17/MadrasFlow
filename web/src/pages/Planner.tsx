@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { getJSON, hhmm, postJSON, usePolling, type PlanFilters, type RankKey, type StopInfo, type WindowPlan } from '../api'
-import { LevelChip, SimBadge } from '../components'
+import { getJSON, postJSON, usePolling, type PlanFilters, type RankKey, type StopInfo, type WindowPlan } from '../api'
+import { SimBadge } from '../components'
 import { useT } from '../i18n'
 import { useLocation } from '../router'
 import FilterSheet, { activeFilterCount } from './planner/FilterSheet'
 import LocationField, { type Origin } from './planner/LocationField'
 import RankToggles, { DEFAULT_RANK } from './planner/RankToggles'
+import SlotCarousel, { type Selection } from './planner/SlotCarousel'
 import StopPicker from './planner/StopPicker'
 import WindowStepper from './planner/WindowStepper'
 
@@ -28,6 +29,7 @@ export default function Planner() {
   const [filters, setFilters] = useState<PlanFilters>(DEFAULT_FILTERS)
   const [sheet, setSheet] = useState(false)
   const [res, setRes] = useState<WindowPlan | null>(null)
+  const [sel, setSel] = useState<Selection | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -51,6 +53,7 @@ export default function Planner() {
         filters: { ...filters, access_walk_min: origin.walk_min }, rank_by: rank,
       })
       setRes(data)
+      setSel(null)
     } catch (x) { setErr(String((x as Error).message)) } finally { setBusy(false) }
   }
 
@@ -79,21 +82,7 @@ export default function Planner() {
       {res ? (
         <section className="space-y-3" aria-live="polite">
           <SimBadge source={res.data_source} />
-          {res.slots.map((s) => (
-            <div key={s.depart_at} className="card p-3">
-              <h2 className="font-semibold">{t('leave')} {hhmm(s.depart_at)}</h2>
-              {s.itineraries.length ? (
-                <ul className="mt-2 space-y-1 text-sm">
-                  {s.itineraries.map((it, i) => (
-                    <li key={i} className="flex items-center justify-between gap-2">
-                      <span>{it.rank}. {it.legs.filter((l) => l.kind === 'ride').map((l) => l.route).join(' → ')} · {t('arrive')} {hhmm(it.arrive_at)}</span>
-                      <LevelChip level={it.worst_level} size="sm" />
-                    </li>
-                  ))}
-                </ul>
-              ) : <p className="text-sm text-slate-600 dark:text-slate-400">{t('noRoutesSlot')}</p>}
-            </div>
-          ))}
+          <SlotCarousel plan={res} selected={sel} onSelect={setSel} />
         </section>
       ) : null}
     </div>
