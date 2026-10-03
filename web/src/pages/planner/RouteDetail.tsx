@@ -4,6 +4,7 @@ import { hhmm, type WinItinerary } from '../../api'
 import { Icon, LevelChip, ModeTile, Spinner } from '../../components'
 import { useT } from '../../i18n'
 import { lazyReload } from '../../lazyReload'
+import { rapidoFromEnd, rapidoToStart } from '../../rapido'
 
 const RouteMap = lazyReload(() => import('./RouteMap'))
 
@@ -19,6 +20,7 @@ export default function RouteDetail({ it, departAt }: { it: WinItinerary; depart
       </div>
       <Suspense fallback={<Spinner />}><RouteMap it={it} /></Suspense>
       <ol className="card divide-y divide-slate-200 px-4 dark:divide-white/5">
+        <RapidoRow {...rapidoToStart(it.legs)} label={t('rapidoTo')} />
         {it.legs.map((l, i) => l.kind === 'walk' ? (
           <li key={i} className="flex items-center gap-2 py-2.5 text-sm text-slate-600 dark:text-slate-300"><Icon name="walk" className="h-4 w-4" /> {t('walk')} {Math.round(l.minutes)} {t('min')}: {l.from} → {l.to}</li>
         ) : (
@@ -35,7 +37,20 @@ export default function RouteDetail({ it, departAt }: { it: WinItinerary; depart
             </div>
           </li>
         ))}
+        <RapidoRow {...rapidoFromEnd(it.legs)} label={t('rapidoFrom')} />
       </ol>
     </section>
+  )
+}
+
+// First/last-mile hand-off row: "Need a ride to <first stop>?" / "Going on from <last stop>?" + Check Rapido.
+function RapidoRow({ place, url, label }: { place: string; url: string; label: string }) {
+  const t = useT()
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm text-slate-600 dark:text-slate-300">
+      <span>{label} <b className="text-[#002046] dark:text-navy-soft">{place}</b></span>
+      <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`${t('checkRapido')}: ${label} ${place}`}
+        className="tap inline-flex items-center rounded-full bg-[#f9c933] px-3 py-1 text-xs font-semibold text-black hover:brightness-95">{t('checkRapido')} ↗</a>
+    </li>
   )
 }
