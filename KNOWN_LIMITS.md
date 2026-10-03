@@ -71,3 +71,9 @@ Requirements that are not fully met, and why. Nothing here was silently dropped.
   time even when the demo clock (`--clock`) is shifted.
 - The Docker image builds and runs the full rebuild, the test suite and the smoke test (2026-10-03).
   `docker compose up` on a fresh machine, with no host data, was not tested end to end.
+- "Check Rapido" on a route opens Rapido's mobile web app for the first and last mile: drop = the
+  trip's first stop (pickup left blank), or pickup = the last stop (drop left blank). It uses an
+  undocumented link (`m.rapido.bike/unup-home/seo/<pickup>/<drop>?version=v3`, the one Rapido's own
+  route pages use; a blank side is sent as four spaces). Rapido geocodes the stop names and takes the
+  first match; it may change without notice, and booking needs a Rapido login. No Rapido API or fare
+  data is used.
