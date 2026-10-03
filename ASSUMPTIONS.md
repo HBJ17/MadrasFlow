@@ -10,7 +10,7 @@ obtained. **Nothing below is a measured fact about Chennai transit unless a sour
 |---|---|---|---|
 | 1 | Bus + metro GTFS | Downloaded (community feed `chennai-unified-gtfs.zip`, Ithu Ungal Soththu, version 2025.03.25). License terms of the feed were **not** confirmed. The feed is a merge with ragged rows (CMRL rows have a different column order) and is read with a tolerant parser. | — |
 | 2 | OSM bus stops | Overpass API unreachable from the build machine (504 / connection resets on three mirrors). | GTFS stop list for the corridor (the spec's "manual stop list" role). |
-| 3 | MRTS timetable | Not in the GTFS feed. | 17 stations hand-coded in `config/corridor.yaml`, **approximate coordinates**, headways 12 min peak / 20 min off-peak. |
+| 3 | MRTS timetable | Not in the GTFS feed. | 19 stations hand-coded in `config/corridor.yaml` (Chennai Beach – St. Thomas Mount, including the March 2026 extension), **approximate coordinates** except Puzhuthivakkam and St. Thomas Mount (Wikipedia). 43 train pairs a day (Southern Railway notice, Mar 2026) spread as 15 min peak / 20 min evening / 36–60 min off-peak (the split is an assumption). |
 | 4 | Metro timetable | The feed's CMRL trips are schematic (only first/last stop, every 3 h). | Station list and coordinates from the feed; headways hand-coded (5 min peak / 8 min off-peak Blue, 6 / 9 Green). |
 | 7 | MTC ridership | No corridor figure found. | Bus target set by what the 4 modelled routes' GTFS timetables can carry (see below). |
 | 8 | MTC fares | Only an old city-guide figure (Rs 2 per ~2 km stage). | Configurable fare table, minimum Rs 5. |
@@ -22,12 +22,14 @@ Weather (Open-Meteo, 92 past days + 7 forecast days) and Tamil Nadu holidays (`h
 
 ## Network (config/corridor.yaml)
 
-- Corridor routes: MTC 51R (Tambaram West–Velachery), 95 (Tambaram East–Thiruvanmiyur), S97 (Guindy Metro–Velachery), M70 CT (Guindy–Thiruvanmiyur); MRTS Chennai Beach–Velachery; Metro Blue Line segment Saidapet–Airport; Green Line segment Ekkattuthangal–St. Thomas Mount.
+- Corridor routes: MTC 51R (Tambaram West–Velachery), 95 (Tambaram East–Thiruvanmiyur), S97 (Guindy Metro–Velachery), M70 CT (Guindy–Thiruvanmiyur); MRTS Chennai Beach–St. Thomas Mount (extended from Velachery on 14 Mar 2026; Puzhuthivakkam modelled, Adambakkam skipped because trains do not stop there yet); Metro Blue Line segment Saidapet–Airport; Green Line segment Ekkattuthangal–St. Thomas Mount.
 - 51R: the feed has only the Velachery→Tambaram pattern; the other direction is the reversed pattern, with timetable from the headway profile.
 - M70 CT: the feed has only 10 midday trips per direction; timetable from the headway profile (stops and run times from GTFS).
 - Guindy metro station (`CMRL_22`): the feed coordinate is ~600 m east of the station; moved next to Guindy railway station so bus–metro transfers work.
-- Interchange overrides: Velachery MRTS, Chennai Beach, Park Town, Guindy, Alandur (both lines), St. Thomas Mount.
-- Vehicle capacities (seated / total incl. standing): MTC ordinary 40 / 70, AC 38 / 55, MRTS 9-car 1,000 / 2,500, CMRL 3-car 350 / 1,100. **Verify.**
+- Interchange overrides: Velachery MRTS, Chennai Beach, Park Town, Guindy, Alandur (both lines), St. Thomas Mount (metro and MRTS).
+- St. Thomas Mount MRTS (`MRTS_STM`): placed ~100 m from the metro station so the integrated MRTS/metro terminal counts as one station; Wikipedia's coordinate (12.9947, 80.1989) is the suburban platform ~700 m away, which would put the transfer outside the 400 m walk limit. Assumption.
+- The 2 Beach–Velachery and 3 Velachery–St. Thomas Mount short workings are not modelled; all MRTS trips run end to end.
+- Vehicle capacities (seated / total incl. standing): MTC ordinary 48 / 83 (RTO permitted load, per Wikipedia's MTC article; peak-hour buses are reported carrying over 160, which the twin does not allow — riders beyond 83 are left behind and counted in the demand load factor), AC 38 / 55, MRTS 9-car 1,000 / 2,500, CMRL 3-car 350 / 1,100. AC, MRTS and metro: **verify.**
 - Dwell: bus `10 + 1.5·boarders + 1.0·alighters` s; rail `25 + 0.4·b + 0.4·a` s (from the spec).
 - Fallback bus speed 18 km/h where GTFS run times are missing; road distance = 1.25 × straight line; MRTS 32 km/h, metro 34 km/h average.
 - Stops within 150 m are one physical station; walking transfers up to 400 m at 4.5 km/h with a 4-minute transfer penalty (spec).
@@ -52,15 +54,18 @@ Weather (Open-Meteo, 92 past days + 7 forecast days) and Tamil Nadu holidays (`h
 
 - Metro anchors are published (CMRL via DT Next and press, Feb/Jul/Aug 2026).
 - Corridor metro share = 10 of 41 stations, equal weights → 0.244 × 342,702 ≈ **83,600 boardings/day** (assumption).
-- MRTS **40,000/day**: assumed, about half of the metro figure (MRTS is known to run below capacity).
-- Bus **24,000/day**: assumed. The 4 modelled routes stand in for many parallel route variants that are not modelled, so their target is what their GTFS timetables can carry — busiest slots at a demand load factor of about 1.3–1.4 rather than overloaded all day — not the 70:30 bus:rail split. Chosen with `scripts/dev/bus_sweep.py`. The twin still reports ~12,000 trips/day that give up (mostly rail riders waiting for a sparse feeder bus at Guindy, Little Mount, Kasturba Nagar and Velachery); read it as "these four timetables are overloaded at feeder stops", not as a corridor-wide statistic.
-- Weekday/weekend ratio 1.47 (= 1/0.68), peak-hour share band 40–55 %, event-day ratio 1.2: assumptions from the spec.
+- MRTS **100,000/day**: the whole line is modelled, so the target is the line-wide figure of about 1 lakh/day (Wikipedia, Chennai MRTS, 2023). It predates the March 2026 extension, so it is probably conservative.
+- MRTS station checks, reported in `reports/twin_validation.md` but not fitted: Velachery ~70,000/day (Wikipedia, 2026; no source cited there) and Beach + Thirumayilai + Velachery ≈ 40% of MRTS ridership (Wikipedia, 2012 figure).
+- Bus **24,000/day**: assumed. The 4 modelled routes stand in for many parallel route variants that are not modelled, so their target is what their GTFS timetables can carry — busiest slots at a demand load factor of about 1.3–1.4 rather than overloaded all day — not the 70:30 bus:rail split. Chosen with `scripts/dev/bus_sweep.py`. The twin still reports ~10,000 trips/day that give up (mostly rail riders waiting for a sparse feeder bus at Guindy, Little Mount, Kasturba Nagar and Velachery); read it as "these four timetables are overloaded at feeder stops", not as a corridor-wide statistic.
+- Peak hours 07–10 and 17–20 (press reports on MTC/MRTS crowding; the spec used 08–10). Peak-hour share band 45–60 %: the spec's 40–55 % band for 08–10 + 17–20, widened by 5 points for the extra hour (assumption).
+- Weekday/weekend ratio 1.47 (= 1/0.68), event-day ratio 1.2: assumptions from the spec.
 
 ## Scenarios (config/scenarios.yaml)
 
 - Heavy rain: bus demand ×1.15, metro/MRTS ×1.10, run times ×1.25, bus dispatch delay ×1.5 (spec values, assumptions).
 - Cricket match at Chepauk: 35,000 attendance, catchment 20,000 → surge factor 2.75 at the venue for 2 h before / 1 h after, day total ×1.2; match 15:30–19:00 (so the after-surge falls inside service hours).
 - College reopening ×1.5 at college stops; metro disruption doubles metro headways 08:30–10:00.
+- Cyclone day (Cyclone Michaung pattern, Dec 2023: MTC suspended 1,000+ of ~3,861 buses, MRTS halted, metro kept running): MRTS suspended all day, bus trips ×1/1.35 (~26% cancelled), day total ×0.75, metro preference ×1.25, bus run times ×1.5 (heavy rain is reported to add 20–50 min to bus journeys), bus dispatch delay ×2. The halt and the bus cut follow the press reports; the multipliers are assumptions.
 - `data/events.csv` is a hand-made illustrative calendar (12 rows); dates and attendances are not verified.
 
 ## Forecasting, routing, advisories

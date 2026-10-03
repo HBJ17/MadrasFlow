@@ -10,9 +10,13 @@ Requirements that are not fully met, and why. Nothing here was silently dropped.
 - **GTFS licence** of the community feed was not confirmed (the spec flags it as IIITD licence — check terms).
 - The feed's CMRL trips are schematic (first/last stop only), so metro timetables are hand-coded headways.
   MRTS is not in the feed at all; its station coordinates are approximate.
+- Suburban rail (Beach–Tambaram line, ~1.44 lakh/day at Tambaram) is not modelled, so riders who
+  reach St. Thomas Mount, Guindy or Tambaram by suburban train are missing from station footfall.
+- The twin caps buses at their permitted load (83). Real peak buses carry 160+; those riders appear as
+  left-behind demand instead of as an overloaded bus.
 - Only 4 MTC routes are modelled; real corridor bus supply is spread over many route variants and
   feeder services. The modelled routes are therefore overloaded at rail feeder stops in the peaks, and
-  the twin reports about 12,000 trips/day that give up. Treat bus-level numbers as illustrative.
+  the twin reports about 10,000 trips/day that give up. Treat bus-level numbers as illustrative.
 
 ## Twin
 - Commuters are lightweight records driven by a dispatcher process, not one SimPy process each
@@ -55,4 +59,5 @@ Requirements that are not fully met, and why. Nothing here was silently dropped.
   server and reloading a route page (cached strip + "Offline · last updated" banner). The commuter
   app's initial JS is ~55 KB gzipped against a 150 KB budget. The "last updated" time is wall-clock
   time even when the demo clock (`--clock`) is shifted.
-- The Docker image and a fresh-machine run of the README were not tested on the build machine.
+- The Docker image builds and runs the full rebuild, the test suite and the smoke test (2026-10-03).
+  `docker compose up` on a fresh machine, with no host data, was not tested end to end.

@@ -4,13 +4,15 @@ import yaml
 
 from common.config import CONFIG_DIR, load_yaml
 from twin.network import load_network
+from twin.simulate import _holidays
 
 
 def test_weekday_totals_near_targets(seeded_db):
     ev = seeded_db["events"]
     modes = load_network().routes.set_index("route_id")["mode"]
     day = (ev.ts - pd.Timedelta(hours=3)).dt.date
-    wk = ev[pd.to_datetime(day).dt.weekday < 5]
+    # holidays run as holiday days even with use_calendar=False (the fixture uses the last 2 days)
+    wk = ev[(pd.to_datetime(day).dt.weekday < 5) & ~day.isin(set(_holidays()))]
     if wk.empty:
         return
     nd = day[wk.index].nunique()

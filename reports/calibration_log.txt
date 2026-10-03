@@ -1,8 +1,25 @@
-Stage A only, starting from {"base_mode": {"bus": 0.34296876943160165, "metro": 2.47351628369186, "mrts": 1.3376334138665362}, "beta_per_km": 0.135, "peak_width_scale": 1.1}
 Stage A: base_mode
-  [base_mode iter 0] {"bus": 0.34296876943160165, "metro": 2.47351628369186, "mrts": 1.3376334138665362} -> by_mode {'bus': 27665, 'metro': 73030, 'mrts': 40652} rel {'bus': 1.153, 'metro': 0.874, 'mrts': 1.016}
-  [base_mode iter 1] {"bus": 0.2933345367047738, "metro": 2.870055190792012, "mrts": 1.3140533286664837} -> by_mode {'bus': 25569, 'metro': 84191, 'mrts': 39426} rel {'bus': 1.065, 'metro': 1.007, 'mrts': 0.986}
-  [base_mode iter 2] {"bus": 0.2735964433882655, "metro": 2.8479012002820294, "mrts": 1.3351128990965528} -> by_mode {'bus': 24798, 'metro': 85232, 'mrts': 39616} rel {'bus': 1.033, 'metro': 1.02, 'mrts': 0.99}
-  [base_mode iter 3] {"bus": 0.26392740769993706, "metro": 2.7879750086057875, "mrts": 1.349355230935024} -> by_mode {'bus': 24381, 'metro': 80328, 'mrts': 40042} rel {'bus': 1.016, 'metro': 0.961, 'mrts': 1.001}
-  [base_mode iter 4] {"bus": 0.25939415877170185, "metro": 2.9131452027766076, "mrts": 1.347798442033079} -> by_mode {'bus': 24122, 'metro': 82497, 'mrts': 40030} rel {'bus': 1.005, 'metro': 0.987, 'mrts': 1.001}
-Final objective 0.0028: {"by_mode": {"bus": 23974, "metro": 81833, "mrts": 39470}, "weekday_total": 145277, "weekend_total": 101479, "ratio": 1.431595277277635, "peak_share": 0.49731940393612983, "unmet_per_day": 12056.714285714286, "crowded_vs_per_day": 1324.4285714285713, "event_ratio": 1.2009209048167204}
+  [base_mode iter 0] {"bus": 0.55, "mrts": 1.35, "metro": 2.4} -> by_mode {'bus': 36260, 'metro': 71294, 'mrts': 51169} rel {'bus': 1.511, 'metro': 0.853, 'mrts': 0.512}
+  [base_mode iter 1] {"bus": 0.34932082376891455, "metro": 2.8594326179147393, "mrts": 2.8211497908947174} -> by_mode {'bus': 27940, 'metro': 83188, 'mrts': 94104} rel {'bus': 1.164, 'metro': 0.995, 'mrts': 0.941}
+  [base_mode iter 2] {"bus": 0.2955342365667624, "metro": 2.875014376000375, "mrts": 3.016179983772899} -> by_mode {'bus': 25756, 'metro': 85430, 'mrts': 99893} rel {'bus': 1.073, 'metro': 1.022, 'mrts': 0.999}
+  [base_mode iter 3] {"bus": 0.273447468648794, "metro": 2.8073430066710627, "mrts": 3.01973402050282} -> by_mode {'bus': 24936, 'metro': 80458, 'mrts': 97816} rel {'bus': 1.039, 'metro': 0.962, 'mrts': 0.978}
+  [base_mode iter 4] {"bus": 0.2621783374069706, "metro": 2.92816960272481, "mrts": 3.093982141907152} -> by_mode {'bus': 24327, 'metro': 84574, 'mrts': 100792} rel {'bus': 1.014, 'metro': 1.012, 'mrts': 1.008}
+Stage B: Nelder-Mead on (beta_per_km, peak_width_scale)
+  beta=0.120 width=1.00 obj=0.0074 peak=0.570 ratio=1.45 event=1.22 by_mode={'bus': 24200, 'metro': 82679, 'mrts': 99246}
+  beta=0.180 width=1.00 obj=0.0082 peak=0.571 ratio=1.45 event=1.21 by_mode={'bus': 23890, 'metro': 83789, 'mrts': 96459}
+  beta=0.120 width=0.80 obj=0.0149 peak=0.589 ratio=1.46 event=1.20 by_mode={'bus': 23784, 'metro': 84370, 'mrts': 99751}
+  beta=0.180 width=1.20 obj=0.0028 peak=0.551 ratio=1.47 event=1.19 by_mode={'bus': 24435, 'metro': 84830, 'mrts': 97831}
+  beta=0.210 width=1.40 obj=0.0008 peak=0.530 ratio=1.48 event=1.19 by_mode={'bus': 24441, 'metro': 85149, 'mrts': 96352}
+  beta=0.150 width=1.40 obj=0.0004 peak=0.530 ratio=1.48 event=1.19 by_mode={'bus': 24573, 'metro': 84270, 'mrts': 98864}
+  beta=0.135 width=1.60 obj=0.0018 peak=0.508 ratio=1.46 event=1.18 by_mode={'bus': 24928, 'metro': 84460, 'mrts': 99142}
+  beta=0.240 width=1.60 obj=0.0025 peak=0.510 ratio=1.47 event=1.18 by_mode={'bus': 24705, 'metro': 86180, 'mrts': 94767}
+  beta=0.210 width=1.60 obj=0.0022 peak=0.510 ratio=1.47 event=1.18 by_mode={'bus': 24800, 'metro': 85765, 'mrts': 95927}
+  beta=0.150 width=1.20 obj=0.0027 peak=0.551 ratio=1.47 event=1.19 by_mode={'bus': 24507, 'metro': 84302, 'mrts': 99095}
+  beta=0.195 width=1.50 obj=0.0016 peak=0.517 ratio=1.46 event=1.16 by_mode={'bus': 24555, 'metro': 84643, 'mrts': 96247}
+  beta=0.165 width=1.30 obj=0.0016 peak=0.542 ratio=1.46 event=1.18 by_mode={'bus': 24564, 'metro': 84831, 'mrts': 97850}
+  beta=0.172 width=1.35 obj=0.0013 peak=0.538 ratio=1.48 event=1.17 by_mode={'bus': 24594, 'metro': 84883, 'mrts': 98277}
+  beta=0.187 width=1.45 obj=0.0009 peak=0.530 ratio=1.48 event=1.18 by_mode={'bus': 24521, 'metro': 85613, 'mrts': 96987}
+Stage A (final): base_mode with fitted shape parameters
+  [base_mode iter 0] {"bus": 0.2621783374069706, "metro": 2.92816960272481, "mrts": 3.093982141907152} -> by_mode {'bus': 24722, 'metro': 86251, 'mrts': 99954} rel {'bus': 1.03, 'metro': 1.032, 'mrts': 1.0}
+  [base_mode iter 1] {"bus": 0.25376820552707274, "metro": 2.8293233267167195, "mrts": 3.095548453393604} -> by_mode {'bus': 24434, 'metro': 82918, 'mrts': 100540} rel {'bus': 1.018, 'metro': 0.992, 'mrts': 1.005}
+Final objective 0.0006: {"by_mode": {"bus": 24225, "metro": 81258, "mrts": 98349}, "weekday_total": 203833, "weekend_total": 138036, "ratio": 1.4766580888802185, "peak_share": 0.5317876213617749, "unmet_per_day": 12991.142857142857, "crowded_vs_per_day": 1016.0, "event_ratio": 1.185367431556867}

@@ -1,46 +1,46 @@
 {
- "generated_at": "2026-10-02T13:39:41",
+ "generated_at": "2026-10-03T06:32:38",
  "days": 3,
  "simulated": true,
  "scope": "MTC bus routes in the twin; weekdays without calendar effects",
  "crowded_vehicle_stops_per_day": {
-  "before": 1138,
-  "after": 947,
-  "change": "-17%"
+  "before": 889,
+  "after": 701,
+  "change": "-21%"
  },
  "left_behind_per_day": {
-  "before": 14324,
-  "after": 7404,
-  "change": "-48%"
+  "before": 8494,
+  "after": 4625,
+  "change": "-46%"
  },
  "peak_lf_p90": {
-  "before": 1.393,
-  "after": 1.151,
-  "change": "-17%"
+  "before": 1.217,
+  "after": 1.091,
+  "change": "-10%"
  },
  "peak_hour_mean_lf": {
-  "before": 0.588,
-  "after": 0.501
+  "before": 0.434,
+  "after": 0.398
  },
- "extra_bus_hours_per_day": 131.4,
- "extra_trips_per_day": 149.7,
+ "extra_bus_hours_per_day": 74.7,
+ "extra_trips_per_day": 77.0,
  "per_day": [
   {
    "date": "2026-09-22",
-   "windows": 26,
-   "extra_trips": 151,
-   "extra_bus_hours": 130.4,
+   "windows": 21,
+   "extra_trips": 76,
+   "extra_bus_hours": 74.0,
    "before": {
-    "crowded_vehicle_stops": 1124,
-    "left_behind": 13955,
-    "peak_lf_p90": 1.371,
-    "mean_peak_hour_lf": 0.58
+    "crowded_vehicle_stops": 866,
+    "left_behind": 8408,
+    "peak_lf_p90": 1.223,
+    "mean_peak_hour_lf": 0.438
    },
    "after": {
-    "crowded_vehicle_stops": 894,
-    "left_behind": 6828,
-    "peak_lf_p90": 1.144,
-    "mean_peak_hour_lf": 0.498
+    "crowded_vehicle_stops": 712,
+    "left_behind": 4646,
+    "peak_lf_p90": 1.093,
+    "mean_peak_hour_lf": 0.402
    },
    "advisories": [
     {
@@ -48,72 +48,72 @@
      "direction": 0,
      "start": "08:00",
      "end": "09:15",
-     "n": 4,
-     "peak_lf": 1.1
+     "n": 3,
+     "peak_lf": 1.03
     },
     {
      "route": "BUS_95",
      "direction": 0,
-     "start": "06:15",
+     "start": "06:30",
+     "end": "08:00",
+     "n": 2,
+     "peak_lf": 1.18
+    },
+    {
+     "route": "BUS_95",
+     "direction": 0,
+     "start": "08:00",
      "end": "10:45",
      "n": 8,
-     "peak_lf": 1.47
+     "peak_lf": 1.39
     },
     {
      "route": "BUS_95",
      "direction": 0,
-     "start": "11:00",
+     "start": "11:15",
      "end": "12:00",
      "n": 1,
-     "peak_lf": 1.05
-    },
-    {
-     "route": "BUS_95",
-     "direction": 0,
-     "start": "16:00",
-     "end": "16:45",
-     "n": 2,
-     "peak_lf": 1.15
+     "peak_lf": 1.07
     },
     {
      "route": "BUS_95",
      "direction": 0,
      "start": "17:00",
-     "end": "18:15",
+     "end": "18:45",
      "n": 3,
-     "peak_lf": 1.22
+     "peak_lf": 1.2
     },
     {
      "route": "BUS_95",
      "direction": 0,
-     "start": "18:15",
-     "end": "20:00",
-     "n": 4,
-     "peak_lf": 1.21
-    },
-    {
-     "route": "BUS_95",
-     "direction": 1,
-     "start": "08:45",
-     "end": "09:30",
-     "n": 1,
+     "start": "18:45",
+     "end": "19:30",
+     "n": 2,
      "peak_lf": 1.11
     },
     {
-     "route": "BUS_M70",
+     "route": "BUS_95",
      "direction": 0,
-     "start": "06:15",
-     "end": "07:00",
-     "n": 1,
-     "peak_lf": 1.09
+     "start": "19:30",
+     "end": "20:15",
+     "n": 2,
+     "peak_lf": 1.03
     },
     {
      "route": "BUS_M70",
      "direction": 0,
-     "start": "07:15",
-     "end": "11:15",
-     "n": 22,
-     "peak_lf": 1.8
+     "start": "05:15",
+     "end": "11:45",
+     "n": 19,
+     "peak_lf": 1.33
+    },
+    {
+     "route": "BUS_M70",
+     "direction": 0,
+     "start": "12:30",
+     "end": "13:15",
+     "n": 1,
+     "peak_lf": 1.06
     },
     {
      "route": "BUS_M70",
@@ -121,39 +121,31 @@
      "start": "15:30",
      "end": "16:15",
      "n": 1,
-     "peak_lf": 1.08
+     "peak_lf": 1.03
     },
     {
      "route": "BUS_M70",
      "direction": 0,
      "start": "17:15",
-     "end": "20:45",
-     "n": 16,
+     "end": "21:30",
+     "n": 12,
      "peak_lf": 1.45
     },
     {
      "route": "BUS_M70",
-     "direction": 0,
-     "start": "21:00",
-     "end": "22:15",
-     "n": 1,
-     "peak_lf": 1.22
+     "direction": 1,
+     "start": "07:45",
+     "end": "08:30",
+     "n": 2,
+     "peak_lf": 1.13
     },
     {
      "route": "BUS_M70",
      "direction": 1,
-     "start": "07:30",
-     "end": "13:15",
-     "n": 22,
-     "peak_lf": 1.39
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "13:45",
-     "end": "14:30",
-     "n": 1,
-     "peak_lf": 1.03
+     "start": "09:30",
+     "end": "10:30",
+     "n": 4,
+     "peak_lf": 1.29
     },
     {
      "route": "BUS_M70",
@@ -161,31 +153,23 @@
      "start": "15:45",
      "end": "16:30",
      "n": 2,
-     "peak_lf": 1.35
+     "peak_lf": 1.15
     },
     {
      "route": "BUS_M70",
      "direction": 1,
-     "start": "17:15",
-     "end": "21:00",
-     "n": 10,
-     "peak_lf": 1.2
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "21:00",
-     "end": "22:15",
+     "start": "18:15",
+     "end": "19:15",
      "n": 2,
-     "peak_lf": 1.5
+     "peak_lf": 1.09
     },
     {
      "route": "BUS_S97",
      "direction": 0,
-     "start": "08:00",
-     "end": "08:45",
+     "start": "08:30",
+     "end": "09:15",
      "n": 2,
-     "peak_lf": 1.58
+     "peak_lf": 1.92
     },
     {
      "route": "BUS_S97",
@@ -193,107 +177,91 @@
      "start": "10:15",
      "end": "11:00",
      "n": 1,
-     "peak_lf": 1.11
+     "peak_lf": 1.12
     },
     {
      "route": "BUS_S97",
      "direction": 0,
      "start": "17:30",
      "end": "18:15",
-     "n": 1,
-     "peak_lf": 1.34
+     "n": 2,
+     "peak_lf": 1.83
     },
     {
      "route": "BUS_S97",
      "direction": 0,
      "start": "18:45",
      "end": "20:00",
+     "n": 3,
+     "peak_lf": 1.79
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 1,
+     "start": "08:00",
+     "end": "09:00",
      "n": 2,
-     "peak_lf": 1.52
+     "peak_lf": 1.29
     },
     {
      "route": "BUS_S97",
      "direction": 1,
-     "start": "06:30",
-     "end": "10:45",
-     "n": 28,
-     "peak_lf": 3.48
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "13:45",
-     "end": "14:30",
-     "n": 1,
-     "peak_lf": 1.51
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "16:15",
-     "end": "18:00",
-     "n": 6,
-     "peak_lf": 2.5
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "18:00",
-     "end": "19:45",
-     "n": 8,
-     "peak_lf": 1.93
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "19:45",
-     "end": "21:00",
-     "n": 1,
-     "peak_lf": 1.27
+     "start": "09:00",
+     "end": "10:15",
+     "n": 2,
+     "peak_lf": 1.35
     }
    ]
   },
   {
    "date": "2026-09-23",
-   "windows": 33,
-   "extra_trips": 134,
-   "extra_bus_hours": 120.8,
+   "windows": 21,
+   "extra_trips": 82,
+   "extra_bus_hours": 77.8,
    "before": {
-    "crowded_vehicle_stops": 1149,
-    "left_behind": 14447,
-    "peak_lf_p90": 1.409,
-    "mean_peak_hour_lf": 0.59
+    "crowded_vehicle_stops": 930,
+    "left_behind": 8980,
+    "peak_lf_p90": 1.235,
+    "mean_peak_hour_lf": 0.435
    },
    "after": {
-    "crowded_vehicle_stops": 1027,
-    "left_behind": 8710,
-    "peak_lf_p90": 1.181,
-    "mean_peak_hour_lf": 0.507
+    "crowded_vehicle_stops": 693,
+    "left_behind": 4715,
+    "peak_lf_p90": 1.099,
+    "mean_peak_hour_lf": 0.396
    },
    "advisories": [
     {
      "route": "BUS_51R",
      "direction": 0,
-     "start": "08:00",
-     "end": "09:15",
-     "n": 4,
-     "peak_lf": 1.1
+     "start": "08:45",
+     "end": "09:30",
+     "n": 2,
+     "peak_lf": 1.02
     },
     {
      "route": "BUS_95",
      "direction": 0,
      "start": "06:30",
-     "end": "10:30",
-     "n": 8,
-     "peak_lf": 1.48
+     "end": "07:15",
+     "n": 1,
+     "peak_lf": 1.17
     },
     {
      "route": "BUS_95",
      "direction": 0,
-     "start": "11:00",
-     "end": "12:00",
+     "start": "07:15",
+     "end": "10:30",
+     "n": 6,
+     "peak_lf": 1.39
+    },
+    {
+     "route": "BUS_95",
+     "direction": 0,
+     "start": "11:15",
+     "end": "12:15",
      "n": 2,
-     "peak_lf": 1.08
+     "peak_lf": 1.06
     },
     {
      "route": "BUS_95",
@@ -301,329 +269,29 @@
      "start": "16:00",
      "end": "16:45",
      "n": 1,
-     "peak_lf": 1.08
+     "peak_lf": 1.12
     },
     {
      "route": "BUS_95",
      "direction": 0,
      "start": "17:00",
-     "end": "19:00",
-     "n": 5,
-     "peak_lf": 1.21
-    },
-    {
-     "route": "BUS_95",
-     "direction": 0,
-     "start": "19:00",
-     "end": "20:15",
-     "n": 3,
-     "peak_lf": 1.1
-    },
-    {
-     "route": "BUS_95",
-     "direction": 1,
-     "start": "08:45",
-     "end": "09:30",
-     "n": 1,
-     "peak_lf": 1.15
-    },
-    {
-     "route": "BUS_95",
-     "direction": 1,
-     "start": "18:00",
-     "end": "18:45",
-     "n": 2,
-     "peak_lf": 1.15
-    },
-    {
-     "route": "BUS_95",
-     "direction": 1,
-     "start": "19:00",
-     "end": "19:45",
-     "n": 1,
-     "peak_lf": 1.0
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 0,
-     "start": "05:15",
-     "end": "06:00",
-     "n": 1,
-     "peak_lf": 1.07
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 0,
-     "start": "06:00",
-     "end": "07:00",
-     "n": 2,
-     "peak_lf": 1.06
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 0,
-     "start": "07:00",
-     "end": "10:45",
-     "n": 14,
-     "peak_lf": 1.4
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 0,
-     "start": "15:00",
-     "end": "16:00",
+     "end": "18:15",
      "n": 2,
      "peak_lf": 1.11
     },
     {
-     "route": "BUS_M70",
-     "direction": 0,
-     "start": "17:00",
-     "end": "20:45",
-     "n": 10,
-     "peak_lf": 1.25
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 0,
-     "start": "20:45",
-     "end": "21:30",
-     "n": 1,
-     "peak_lf": 1.22
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 0,
-     "start": "21:30",
-     "end": "23:15",
-     "n": 2,
-     "peak_lf": 1.16
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "07:15",
-     "end": "11:30",
-     "n": 12,
-     "peak_lf": 1.38
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "12:00",
-     "end": "13:15",
-     "n": 3,
-     "peak_lf": 1.36
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "15:30",
-     "end": "16:30",
-     "n": 4,
-     "peak_lf": 1.59
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "16:30",
-     "end": "17:15",
-     "n": 2,
-     "peak_lf": 1.13
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "17:15",
-     "end": "21:00",
-     "n": 10,
-     "peak_lf": 1.14
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "21:00",
-     "end": "22:15",
-     "n": 2,
-     "peak_lf": 1.46
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 0,
-     "start": "08:00",
-     "end": "09:15",
-     "n": 3,
-     "peak_lf": 1.88
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 0,
-     "start": "17:30",
-     "end": "18:15",
-     "n": 1,
-     "peak_lf": 1.09
-    },
-    {
-     "route": "BUS_S97",
+     "route": "BUS_95",
      "direction": 0,
      "start": "18:15",
-     "end": "20:00",
-     "n": 4,
-     "peak_lf": 2.03
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 0,
-     "start": "20:00",
-     "end": "20:45",
-     "n": 1,
+     "end": "20:15",
+     "n": 5,
      "peak_lf": 1.13
     },
     {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "06:30",
-     "end": "07:15",
-     "n": 1,
-     "peak_lf": 1.32
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "07:45",
-     "end": "10:15",
-     "n": 16,
-     "peak_lf": 3.56
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "10:45",
-     "end": "12:00",
-     "n": 2,
-     "peak_lf": 1.43
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "13:45",
-     "end": "14:30",
-     "n": 1,
-     "peak_lf": 1.59
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "17:15",
-     "end": "18:00",
-     "n": 2,
-     "peak_lf": 1.81
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "18:00",
-     "end": "19:15",
-     "n": 2,
-     "peak_lf": 1.7
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "19:15",
-     "end": "21:45",
-     "n": 9,
-     "peak_lf": 1.96
-    }
-   ]
-  },
-  {
-   "date": "2026-09-24",
-   "windows": 30,
-   "extra_trips": 164,
-   "extra_bus_hours": 143.1,
-   "before": {
-    "crowded_vehicle_stops": 1140,
-    "left_behind": 14570,
-    "peak_lf_p90": 1.398,
-    "mean_peak_hour_lf": 0.594
-   },
-   "after": {
-    "crowded_vehicle_stops": 921,
-    "left_behind": 6674,
-    "peak_lf_p90": 1.128,
-    "mean_peak_hour_lf": 0.498
-   },
-   "advisories": [
-    {
-     "route": "BUS_51R",
-     "direction": 0,
-     "start": "08:00",
-     "end": "09:30",
-     "n": 4,
-     "peak_lf": 1.06
-    },
-    {
      "route": "BUS_95",
      "direction": 0,
-     "start": "06:30",
-     "end": "07:15",
-     "n": 1,
-     "peak_lf": 1.14
-    },
-    {
-     "route": "BUS_95",
-     "direction": 0,
-     "start": "07:15",
-     "end": "10:45",
-     "n": 10,
-     "peak_lf": 1.47
-    },
-    {
-     "route": "BUS_95",
-     "direction": 0,
-     "start": "11:00",
-     "end": "11:45",
-     "n": 1,
-     "peak_lf": 1.04
-    },
-    {
-     "route": "BUS_95",
-     "direction": 0,
-     "start": "16:00",
-     "end": "16:45",
-     "n": 1,
-     "peak_lf": 1.11
-    },
-    {
-     "route": "BUS_95",
-     "direction": 0,
-     "start": "17:00",
-     "end": "20:00",
-     "n": 6,
-     "peak_lf": 1.15
-    },
-    {
-     "route": "BUS_95",
-     "direction": 0,
-     "start": "23:15",
+     "start": "23:30",
      "end": "00:15",
-     "n": 1,
-     "peak_lf": 1.07
-    },
-    {
-     "route": "BUS_95",
-     "direction": 1,
-     "start": "08:45",
-     "end": "09:30",
-     "n": 1,
-     "peak_lf": 1.26
-    },
-    {
-     "route": "BUS_95",
-     "direction": 1,
-     "start": "19:00",
-     "end": "19:45",
      "n": 1,
      "peak_lf": 1.04
     },
@@ -633,31 +301,211 @@
      "start": "05:15",
      "end": "06:30",
      "n": 1,
-     "peak_lf": 1.08
+     "peak_lf": 1.14
     },
     {
      "route": "BUS_M70",
      "direction": 0,
+     "start": "06:30",
+     "end": "12:15",
+     "n": 22,
+     "peak_lf": 1.47
+    },
+    {
+     "route": "BUS_M70",
+     "direction": 0,
+     "start": "16:15",
+     "end": "21:00",
+     "n": 18,
+     "peak_lf": 1.5
+    },
+    {
+     "route": "BUS_M70",
+     "direction": 0,
+     "start": "21:00",
+     "end": "22:45",
+     "n": 3,
+     "peak_lf": 1.33
+    },
+    {
+     "route": "BUS_M70",
+     "direction": 1,
+     "start": "08:00",
+     "end": "09:15",
+     "n": 3,
+     "peak_lf": 1.17
+    },
+    {
+     "route": "BUS_M70",
+     "direction": 1,
+     "start": "09:45",
+     "end": "10:45",
+     "n": 2,
+     "peak_lf": 1.08
+    },
+    {
+     "route": "BUS_M70",
+     "direction": 1,
+     "start": "21:00",
+     "end": "21:45",
+     "n": 2,
+     "peak_lf": 1.28
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 0,
+     "start": "08:30",
+     "end": "09:15",
+     "n": 2,
+     "peak_lf": 1.7
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 0,
+     "start": "10:15",
+     "end": "11:00",
+     "n": 1,
+     "peak_lf": 1.07
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 0,
+     "start": "15:45",
+     "end": "16:30",
+     "n": 1,
+     "peak_lf": 1.25
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 0,
+     "start": "17:30",
+     "end": "18:15",
+     "n": 1,
+     "peak_lf": 1.53
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 0,
+     "start": "18:45",
+     "end": "19:30",
+     "n": 2,
+     "peak_lf": 1.87
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 1,
+     "start": "08:30",
+     "end": "10:30",
+     "n": 4,
+     "peak_lf": 1.32
+    }
+   ]
+  },
+  {
+   "date": "2026-09-24",
+   "windows": 23,
+   "extra_trips": 73,
+   "extra_bus_hours": 72.4,
+   "before": {
+    "crowded_vehicle_stops": 871,
+    "left_behind": 8094,
+    "peak_lf_p90": 1.193,
+    "mean_peak_hour_lf": 0.43
+   },
+   "after": {
+    "crowded_vehicle_stops": 697,
+    "left_behind": 4514,
+    "peak_lf_p90": 1.082,
+    "mean_peak_hour_lf": 0.396
+   },
+   "advisories": [
+    {
+     "route": "BUS_95",
+     "direction": 0,
+     "start": "06:30",
+     "end": "07:15",
+     "n": 1,
+     "peak_lf": 1.13
+    },
+    {
+     "route": "BUS_95",
+     "direction": 0,
      "start": "07:15",
-     "end": "11:15",
-     "n": 19,
-     "peak_lf": 1.65
+     "end": "08:00",
+     "n": 2,
+     "peak_lf": 1.19
+    },
+    {
+     "route": "BUS_95",
+     "direction": 0,
+     "start": "08:00",
+     "end": "10:45",
+     "n": 8,
+     "peak_lf": 1.35
+    },
+    {
+     "route": "BUS_95",
+     "direction": 0,
+     "start": "11:15",
+     "end": "12:00",
+     "n": 1,
+     "peak_lf": 1.07
+    },
+    {
+     "route": "BUS_95",
+     "direction": 0,
+     "start": "16:00",
+     "end": "16:45",
+     "n": 1,
+     "peak_lf": 1.09
+    },
+    {
+     "route": "BUS_95",
+     "direction": 0,
+     "start": "17:15",
+     "end": "18:45",
+     "n": 4,
+     "peak_lf": 1.11
+    },
+    {
+     "route": "BUS_95",
+     "direction": 0,
+     "start": "18:45",
+     "end": "20:00",
+     "n": 2,
+     "peak_lf": 1.13
+    },
+    {
+     "route": "BUS_95",
+     "direction": 1,
+     "start": "08:30",
+     "end": "09:15",
+     "n": 1,
+     "peak_lf": 1.13
+    },
+    {
+     "route": "BUS_M70",
+     "direction": 0,
+     "start": "05:45",
+     "end": "11:30",
+     "n": 16,
+     "peak_lf": 1.38
     },
     {
      "route": "BUS_M70",
      "direction": 0,
      "start": "15:30",
      "end": "16:45",
-     "n": 1,
-     "peak_lf": 1.03
+     "n": 3,
+     "peak_lf": 1.28
     },
     {
      "route": "BUS_M70",
      "direction": 0,
-     "start": "17:00",
+     "start": "17:15",
      "end": "20:45",
-     "n": 14,
-     "peak_lf": 1.34
+     "n": 10,
+     "peak_lf": 1.22
     },
     {
      "route": "BUS_M70",
@@ -669,131 +517,91 @@
     },
     {
      "route": "BUS_M70",
-     "direction": 1,
-     "start": "07:15",
-     "end": "12:00",
-     "n": 18,
-     "peak_lf": 1.66
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "12:15",
-     "end": "13:00",
+     "direction": 0,
+     "start": "21:30",
+     "end": "23:15",
      "n": 2,
-     "peak_lf": 1.53
+     "peak_lf": 1.11
     },
     {
      "route": "BUS_M70",
      "direction": 1,
-     "start": "13:00",
-     "end": "14:30",
-     "n": 2,
-     "peak_lf": 1.26
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "15:30",
-     "end": "16:30",
+     "start": "08:00",
+     "end": "09:45",
      "n": 4,
-     "peak_lf": 1.73
+     "peak_lf": 1.14
     },
     {
      "route": "BUS_M70",
      "direction": 1,
-     "start": "16:30",
-     "end": "17:15",
+     "start": "15:45",
+     "end": "17:00",
+     "n": 3,
+     "peak_lf": 1.21
+    },
+    {
+     "route": "BUS_M70",
+     "direction": 1,
+     "start": "18:45",
+     "end": "19:45",
      "n": 2,
-     "peak_lf": 1.17
-    },
-    {
-     "route": "BUS_M70",
-     "direction": 1,
-     "start": "17:15",
-     "end": "21:45",
-     "n": 17,
-     "peak_lf": 1.52
+     "peak_lf": 1.02
     },
     {
      "route": "BUS_S97",
      "direction": 0,
      "start": "08:00",
      "end": "09:15",
-     "n": 6,
-     "peak_lf": 3.01
+     "n": 3,
+     "peak_lf": 1.95
     },
     {
      "route": "BUS_S97",
      "direction": 0,
      "start": "09:45",
-     "end": "10:45",
+     "end": "11:00",
      "n": 2,
-     "peak_lf": 1.37
+     "peak_lf": 1.4
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 0,
+     "start": "17:30",
+     "end": "18:15",
+     "n": 1,
+     "peak_lf": 1.67
     },
     {
      "route": "BUS_S97",
      "direction": 0,
      "start": "18:45",
-     "end": "19:30",
-     "n": 2,
-     "peak_lf": 2.23
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "06:30",
-     "end": "07:45",
-     "n": 2,
-     "peak_lf": 1.41
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "07:45",
-     "end": "10:45",
-     "n": 30,
-     "peak_lf": 5.29
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "10:45",
-     "end": "12:30",
-     "n": 3,
-     "peak_lf": 1.38
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "12:30",
-     "end": "13:15",
-     "n": 1,
-     "peak_lf": 1.11
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "16:15",
-     "end": "17:30",
-     "n": 2,
-     "peak_lf": 1.55
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "17:30",
-     "end": "19:45",
-     "n": 6,
-     "peak_lf": 1.98
-    },
-    {
-     "route": "BUS_S97",
-     "direction": 1,
-     "start": "19:45",
-     "end": "21:00",
+     "end": "20:00",
      "n": 3,
      "peak_lf": 1.72
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 1,
+     "start": "09:00",
+     "end": "09:45",
+     "n": 1,
+     "peak_lf": 1.25
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 1,
+     "start": "16:45",
+     "end": "17:30",
+     "n": 1,
+     "peak_lf": 1.2
+    },
+    {
+     "route": "BUS_S97",
+     "direction": 1,
+     "start": "18:00",
+     "end": "18:45",
+     "n": 1,
+     "peak_lf": 1.06
     }
    ]
   }

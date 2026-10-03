@@ -1,7 +1,7 @@
 # Koottam — Public Transport Occupancy Predictor (South Chennai)
 
 A crowd-forecasting platform for one South Chennai corridor — **Tambaram · Velachery · Thiruvanmiyur**
-with the Guindy / St. Thomas Mount interchange — covering MTC buses, MRTS (Chennai Beach–Velachery)
+with the Guindy / St. Thomas Mount interchange — covering MTC buses, MRTS (Chennai Beach–St. Thomas Mount)
 and Chennai Metro. A calibrated **digital twin** (SimPy) produces the demo data; a **two-camera
 computer-vision pipeline** is the real-world collection method. Both write the same event table, so
 every downstream module is source-agnostic.
@@ -133,8 +133,8 @@ npx lighthouse@11.7.1 http://localhost:8000/ --form-factor=mobile --only-categor
 ## What to say honestly in the pitch
 
 - The twin is a calibrated simulation, not a replica of the real network. Metro totals are anchored to
-  published CMRL figures through an assumed corridor share; **bus and MRTS totals are assumptions**
-  until MTC/CUMTA data is available. See `ASSUMPTIONS.md`.
+  published CMRL figures through an assumed corridor share; the MRTS total uses a 2023 line-wide
+  figure (about 1 lakh/day); **the bus total is an assumption** until MTC/CUMTA data is available. See `ASSUMPTIONS.md`.
 - Forecast accuracy is measured on twin data: it shows the pipeline works, not real-world accuracy.
 - The camera system is a prototype proving the method on two cameras. Its accuracy report was run on a
   synthetic clip; a real doorway recording is needed for a real number, and occlusion in packed
