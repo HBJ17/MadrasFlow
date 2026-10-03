@@ -90,6 +90,47 @@ class WhatIfRequest(BaseModel):
     seed: int = 7
 
 
+HHMM = Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+
+
+class BuilderEvent(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    venue_stop: str
+    attendance: int = Field(ge=500, le=100000)
+    start: str = HHMM
+    end: str = HHMM
+
+
+class BuilderDisruption(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["metro_delay", "mrts_suspended", "bus_cut"]
+    from_: str = Field(alias="from", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+    to: str = HHMM
+
+
+class FleetCell(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    route: str
+    direction: int | None = Field(default=None, ge=0, le=1)
+    hour: int = Field(ge=4, le=23)
+    buses: int = Field(ge=1, le=10)
+
+
+class BuilderPlan(BaseModel):
+    """Scenario builder: every part is optional, so a run can be conditions only, fleet only, or both."""
+    model_config = ConfigDict(extra="forbid")
+    day_type: Literal["weekday", "weekend", "holiday"] | None = None
+    weather: Literal["dry", "light", "heavy", "cyclone"] | None = None
+    events: list[BuilderEvent] = Field(default_factory=list, max_length=3)
+    disruptions: list[BuilderDisruption] = Field(default_factory=list, max_length=4)
+    demand_pct: float = Field(default=0, ge=-50, le=50)
+    fleet: list[FleetCell] = Field(default_factory=list, max_length=200)
+
+    def has_changes(self) -> bool:
+        return bool((self.weather not in (None, "dry")) or self.events or self.disruptions or self.demand_pct or self.fleet
+                    or self.day_type in ("weekend", "holiday"))
+
+
 class TwinRunRequest(BaseModel):
     scenario: str = "baseline"
     start_date: str | None = None

@@ -11,7 +11,7 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException
 from fastapi.concurrency import run_in_threadpool
 
-from api.models import TwinRunRequest, WhatIfRequest
+from api.models import BuilderPlan, TwinRunRequest, WhatIfRequest
 from common import clock
 from common.config import IST, REPORTS_DIR, crowd_level, iso
 from db.database import execute, query
@@ -32,8 +32,16 @@ def _run_job(run_id: str, req: TwinRunRequest):
 
     try:
         _RUNS[run_id]["status"] = "running"
-        base_ev, base_s = run(scenario="baseline", start_date=req.start_date, days=req.days, seed=req.seed,
-                              workers=1, run_id=f"{run_id}-base", use_calendar=False)
+        if req.scenario == "builder":
+            # compare against a normal day of the same kind, so only the plan's changes show
+            dt = (req.mods or {}).get("day_type")
+            others = {k: v for k, v in (req.mods or {}).items() if k != "day_type" and v}
+            base_mods = {"day_type": dt if (others and dt) else "weekday"}
+            base_ev, base_s = run(scenario="builder", start_date=req.start_date, days=req.days, seed=req.seed,
+                                  workers=1, run_id=f"{run_id}-base", use_calendar=False, mods=base_mods)
+        else:
+            base_ev, base_s = run(scenario="baseline", start_date=req.start_date, days=req.days, seed=req.seed,
+                                  workers=1, run_id=f"{run_id}-base", use_calendar=False)
         ev, s = run(scenario=req.scenario, start_date=req.start_date, days=req.days, seed=req.seed, mods=req.mods,
                     workers=1, run_id=run_id, use_calendar=False)
         caps = query("SELECT route_id, capacity_total FROM route").set_index("route_id").capacity_total
@@ -50,7 +58,18 @@ def _run_job(run_id: str, req: TwinRunRequest):
                    "left_behind_before": int(hb.left_behind.get(h, 0)), "left_behind_after": int(ha.left_behind.get(h, 0)),
                    "crowded_before": int(hb.crowded.get(h, 0)), "crowded_after": int(ha.crowded.get(h, 0))} for h in hrs]
         clean = lambda x: {k: v for k, v in x.items() if not k.startswith("_") and k not in ("per_day",)}  # noqa: E731
+        grid_b, grid_a = route_hour_grid(base_ev, caps), route_hour_grid(ev, caps)
+        worse = worse_routes(grid_b, grid_a)
+        fleet = None
+        if req.scenario == "builder" and (req.mods or {}).get("fleet"):
+            from twin.fleet import buses_to_trips
+            from twin.network import load_network
+
+            fleet = buses_to_trips(load_network(), req.mods["fleet"])[1]
         summary = {"scenario": clean(s), "baseline": clean(base_s), "hourly": series,
+                   "grid": {"before": [{"route_id": r, "direction": d, "hour": h, "lf": v} for (r, d, h), v in sorted(grid_b.items())],
+                            "after": [{"route_id": r, "direction": d, "hour": h, "lf": v} for (r, d, h), v in sorted(grid_a.items())]},
+                   "worse_routes": worse, "fleet": fleet, "mods": req.mods,
                    "by_route": [{"route_id": r, "baseline": int(base_s["by_route_per_day"].get(r, 0)),
                                  "scenario": int(s["by_route_per_day"].get(r, 0))} for r in sorted(base_s["by_route_per_day"])]}
         _RUNS[run_id].update(status="done", summary=summary)
@@ -61,12 +80,38 @@ def _run_job(run_id: str, req: TwinRunRequest):
         _RUNS[run_id].update(status="error", error=str(e))
 
 
+def route_hour_grid(ev: pd.DataFrame, caps) -> dict:
+    """(route, direction, hour) -> 90th percentile of the demand load factor over its vehicle-stops."""
+    e = ev.assign(lf=(ev.onboard_load + ev.left_behind.fillna(0)) / ev.route_id.map(caps), h=ev.ts.dt.hour)
+    q = e.groupby(["route_id", "direction", "h"]).lf.quantile(0.9)
+    return {(r, int(d), int(h)): round(float(v), 3) for (r, d, h), v in q.items() if 5 <= h <= 23}
+
+
+def worse_routes(before: dict, after: dict, margin: float = 0.08) -> list[str]:
+    """Routes whose three busiest hours (either direction) got clearly fuller: robust to the cell-level
+    noise of a single simulated day."""
+    def top3(g, r):
+        v = sorted((x for (rr, _, _), x in g.items() if rr == r), reverse=True)[:3]
+        return sum(v) / len(v) if v else 0.0
+    routes = {k[0] for k in after}
+    return sorted(r for r in routes if top3(after, r) - top3(before, r) > margin and top3(after, r) >= 0.75)
+
+
 @router.post("/twin/run")
 def twin_run(req: TwinRunRequest):
     from twin.scenarios import SCENARIO_IDS
 
     if req.scenario not in SCENARIO_IDS:
         raise HTTPException(400, f"unknown scenario; choose from {SCENARIO_IDS}")
+    if req.scenario == "builder":
+        try:
+            plan = BuilderPlan.model_validate(req.mods or {})
+        except Exception as e:  # pydantic.ValidationError
+            raise HTTPException(422, f"invalid plan: {e}")
+        if not plan.has_changes():
+            raise HTTPException(400, "add at least one condition or fleet change")
+        req.mods = plan.model_dump(by_alias=True, exclude_defaults=True)
+        req.mods.setdefault("day_type", "weekday")   # no day chosen = a normal weekday, whatever today's date is
     if sum(1 for r in _RUNS.values() if r["status"] in ("queued", "running")) >= 2:
         raise HTTPException(429, "two twin runs are already in progress")
     req.start_date = req.start_date or clock.now().date().isoformat()
