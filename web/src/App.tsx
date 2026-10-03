@@ -2,7 +2,8 @@ import { Suspense, useEffect, useState } from 'react'
 import { lazyReload } from './lazyReload'
 import { Link, useLocation } from './router'
 import { LangContext, type Lang, useT } from './i18n'
-import { Spinner } from './components'
+import { Icon, Spinner } from './components'
+import { setDark, useDark } from './theme'
 import Home from './pages/Home'
 import RouteView from './pages/RouteView'
 import StopView from './pages/StopView'
@@ -28,12 +29,28 @@ function Header() {
           <span className="ledger hidden truncate rounded bg-slate-100 px-1.5 py-0.5 text-[10px] sm:inline dark:bg-[#1e232e] dark:text-navy-soft/80">{depot ? t('depot') : t('tagline')}</span>
         </Link>
         <span className="flex-1" />
+        <ThemeToggle />
         <LangToggle />
         <Link to={depot ? '/' : '/depot'} className="tap flex shrink-0 items-center whitespace-nowrap rounded-full px-2 font-display sm:px-3 text-sm font-semibold text-[#002046] transition-colors hover:bg-slate-100 dark:text-navy-soft dark:hover:bg-white/10">
           {depot ? t('commuter') : <><span className="sm:hidden">{t('depotShort')}</span><span className="hidden sm:inline">{t('depot')}</span></>}
         </Link>
       </div>
     </header>
+  )
+}
+
+function ThemeToggle() {
+  const dark = useDark()
+  return (
+    <button
+      type="button"
+      className="tap flex shrink-0 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 active:scale-95 dark:text-navy-soft dark:hover:bg-white/10"
+      onClick={() => setDark(!dark)}
+      aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+      title={dark ? 'Light theme' : 'Dark theme'}
+    >
+      <Icon name={dark ? 'sun' : 'moon'} className="h-5 w-5" />
+    </button>
   )
 }
 

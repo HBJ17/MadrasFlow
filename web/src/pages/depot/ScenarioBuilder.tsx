@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { getJSON, levelOf, postJSON, type RouteInfo } from '../../api'
 import { SimBadge } from '../../components'
-import { CHART as C, Panel } from './ui'
+import { Panel, useChartColors } from './ui'
 
 type DayType = 'weekday' | 'weekend' | 'holiday'
 type Weather = 'dry' | 'light' | 'heavy' | 'cyclone'
@@ -245,6 +245,7 @@ function ChartBox({ title, children }: { title: string; children: React.ReactEle
 }
 
 function Results({ s, routes, onSave, canSave }: { s: Summary; routes: RouteInfo[]; onSave: () => void; canSave: boolean }) {
+  const C = useChartColors()
   return (
     <div className="space-y-4 border-t border-slate-200 pt-4 dark:border-white/5">
       <div className="flex flex-wrap items-center justify-between gap-2">

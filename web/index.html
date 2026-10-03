@@ -3,8 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#fdf9f1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#12141a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fdf9f1" />
+    <script>
+      // Apply the saved light/dark choice (or the device setting) before first paint to avoid a flash.
+      (function () {
+        var t = null
+        try { t = localStorage.getItem('kt-theme') } catch (e) {}
+        var dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.classList.toggle('dark', dark)
+        document.querySelector('meta[name=theme-color]').setAttribute('content', dark ? '#12141a' : '#fdf9f1')
+      })()
+    </script>
     <meta name="description" content="Crowd forecasts for buses, MRTS and metro in South Chennai. Demo data is simulated." />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icon-192.png" />

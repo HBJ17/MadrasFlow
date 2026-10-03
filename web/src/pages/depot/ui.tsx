@@ -1,4 +1,6 @@
 // Small shared pieces for the depot dashboard.
+import { useDark } from '../../theme'
+
 export function Panel({ title, children, right }: { title: string; children: React.ReactNode; right?: React.ReactNode }) {
   return (
     <section className="card space-y-3 p-4 sm:p-5">
@@ -8,6 +10,7 @@ export function Panel({ title, children, right }: { title: string; children: Rea
   )
 }
 
-// SVG presentation attributes cannot use CSS variables, so pick the chart palette from the colour scheme.
-export const DARK = typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
-export const CHART = DARK ? { before: '#9a9ca5', after: '#b9f477', grid: '#2d3341' } : { before: '#9a9ca5', after: '#002046', grid: '#e2ded5' }
+// SVG presentation attributes cannot use CSS variables, so pick the chart palette from the current theme.
+export function useChartColors() {
+  return useDark() ? { before: '#9a9ca5', after: '#b9f477', grid: '#2d3341' } : { before: '#9a9ca5', after: '#002046', grid: '#e2ded5' }
+}

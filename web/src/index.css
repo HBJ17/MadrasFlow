@@ -62,13 +62,12 @@
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
 }
 
-@custom-variant dark (@media (prefers-color-scheme: dark));
+/* Dark mode follows the `dark` class on <html>: set from the saved choice, else the device setting (see index.html / theme.ts) */
+@custom-variant dark (&:where(.dark, .dark *));
 
-:root { color-scheme: light dark; }
-@media (prefers-color-scheme: dark) {
-  /* Outlines, links and rings flip to the light navy so they stay visible on dark surfaces */
-  :root { --color-brand: #aec7f7; --color-brand-ink: #d6e3ff; --color-card: #181b22; }
-}
+:root { color-scheme: light; }
+/* Outlines, links and rings flip to the light navy so they stay visible on dark surfaces */
+:root.dark { color-scheme: dark; --color-brand: #aec7f7; --color-brand-ink: #d6e3ff; --color-card: #181b22; }
 
 body { @apply bg-paper text-ink dark:bg-slate-950 dark:text-[#f4f0e8] antialiased; }
 ::selection { background: var(--color-lime); color: var(--color-lime-ink); }
@@ -79,14 +78,14 @@ body { @apply bg-paper text-ink dark:bg-slate-950 dark:text-[#f4f0e8] antialiase
 }
 a { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 3px solid #465f88; outline-offset: 2px; border-radius: 6px; }
-@media (prefers-color-scheme: dark) { :focus-visible { outline-color: var(--color-lime); } }
+.dark :focus-visible { outline-color: var(--color-lime); }
 
 .lvl-LOW { background: #b9f477; color: #0f2000; }
 .lvl-MEDIUM { background: #ffe08d; color: #241a00; }
 .lvl-HIGH { background: #ffb68a; color: #331200; }
 .lvl-CROWDED { background: var(--color-crowded); color: #fff; }
 .lvl-none { background: #e2ded5; color: #44474e; }
-@media (prefers-color-scheme: dark) { .lvl-none { background: #232833; color: #c4c6cf; } }
+.dark .lvl-none { background: #232833; color: #c4c6cf; }
 .bar-LOW { background: var(--color-low); }
 .bar-MEDIUM { background: var(--color-medium); }
 .bar-HIGH { background: var(--color-high); }
@@ -111,9 +110,7 @@ a { -webkit-tap-highlight-color: transparent; }
 
 /* Chart axis labels follow the theme (series colours are set in depot/ui.tsx) */
 :root { --c-axis: #44474e; }
-@media (prefers-color-scheme: dark) {
-  :root { --c-axis: #c4c6cf; }
-}
+:root.dark { --c-axis: #c4c6cf; }
 .recharts-cartesian-axis-tick-value { fill: var(--c-axis); font-family: var(--font-mono); font-size: 11px; }
 .recharts-legend-item-text { font-family: var(--font-sans); font-size: 12px; }
 .recharts-tooltip-wrapper .recharts-default-tooltip { background: #002046 !important; color: #fdf9f1; border-color: #1b365d !important; border-radius: 10px; font-family: var(--font-mono); font-size: 12px; }
