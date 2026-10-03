@@ -3,6 +3,7 @@
 # Exits non-zero on any failure. Uses data/smoke/ so real data, models and reports are untouched.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+export PYTHONPATH="backend:database:ml:simulation${PYTHONPATH:+:$PYTHONPATH}"
 PY="${PYTHON:-.venv/Scripts/python}"
 [ -x "$PY" ] || PY=".venv/bin/python"
 [ -x "$PY" ] || PY="python"

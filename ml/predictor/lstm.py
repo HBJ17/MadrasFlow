@@ -3,7 +3,7 @@ route embeddings, predicting the next 12 slots (3 h) of load factor as quantiles
 boardings. Quantiles are built as q50 -/+ softplus offsets, so lo <= pred <= hi holds by
 construction (the spec's crossing penalty is therefore always zero and omitted).
 
-    python -m predictor.lstm --train      # trains on the DB, saves models/lstm_v1.pt
+    python -m predictor.lstm --train      # trains on the DB, saves ml/models/lstm_v1.pt
 """
 from __future__ import annotations
 

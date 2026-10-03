@@ -1,4 +1,6 @@
 # Unix/Git-Bash convenience targets. Windows users can run the same python commands directly.
+# Python package roots (see README: Project structure)
+export PYTHONPATH := backend:database:ml:simulation
 PY ?= $(shell [ -x .venv/Scripts/python ] && echo .venv/Scripts/python || echo .venv/bin/python)
 
 .PHONY: setup data seed calibrate validate history train impact web demo test smoke camera-accuracy
@@ -6,7 +8,7 @@ PY ?= $(shell [ -x .venv/Scripts/python ] && echo .venv/Scripts/python || echo .
 setup:
 	python -m venv .venv
 	$(PY) -m pip install -r requirements.txt
-	cd web && npm ci
+	cd frontend && npm ci
 data:
 	$(PY) data/fetch_data.py
 seed:
@@ -22,7 +24,7 @@ train:
 impact:
 	$(PY) -m advisory.impact
 web:
-	cd web && npm run build
+	cd frontend && npm run build
 demo:
 	$(PY) scripts/demo.py
 test:

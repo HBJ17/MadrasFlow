@@ -9,14 +9,14 @@ from pathlib import Path
 
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]   # backend/common/config.py -> project root
 CONFIG_DIR = ROOT / "config"
 DATA_DIR = ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 # Overridable so the smoke test never overwrites real models/reports
 REPORTS_DIR = Path(os.environ.get("TRANSIT_REPORTS_DIR", ROOT / "reports"))
-MODELS_DIR = Path(os.environ.get("TRANSIT_MODELS_DIR", ROOT / "models"))
+MODELS_DIR = Path(os.environ.get("TRANSIT_MODELS_DIR", ROOT / "ml" / "models"))
 
 IST = timezone(timedelta(hours=5, minutes=30), name="Asia/Kolkata")
 

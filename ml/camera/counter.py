@@ -10,8 +10,11 @@ from __future__ import annotations
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
+
+YOLO_WEIGHTS = Path(__file__).resolve().parents[1] / "models" / "yolov8n.pt"   # ml/models/; downloaded on first use
 
 
 def _side(p, a, b) -> float:
@@ -111,7 +114,7 @@ class ZoneCounter:
 class PersonTracker:
     """YOLOv8n (class 0 = person) + ByteTrack via Ultralytics. Imported lazily."""
 
-    def __init__(self, model: str = "yolov8n.pt", imgsz: int = 640, conf: float = 0.35):
+    def __init__(self, model: str = str(YOLO_WEIGHTS), imgsz: int = 640, conf: float = 0.35):
         from ultralytics import YOLO
 
         self.model = YOLO(model)

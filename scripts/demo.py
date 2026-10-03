@@ -8,7 +8,7 @@ Steps (each skipped when its output already exists):
   3. twin.generate --days 90    simulated history (needs config/demand_fitted.yaml from calibration)
   4. predictor.evaluate         train LSTM + Prophet, write reports/forecast_eval.md
   5. advisory.impact            impact summary for the dashboard
-  6. npm run build (web/)       the PWA, served by FastAPI from web/dist
+  6. npm run build (frontend/)  the PWA, served by FastAPI from frontend/dist
 Then uvicorn starts; its scheduler streams today's twin events, forecasts every 5 min and runs
 advisories every 15 min. --clock 08:30 runs the demo clock from 08:30 today (useful for showing
 the morning peak at any hour).
@@ -39,7 +39,9 @@ def main():
     ap.add_argument("--speed", type=float, default=1.0, help="demo clock speed multiplier")
     ap.add_argument("--skip-web", action="store_true")
     a = ap.parse_args()
-    sys.path.insert(0, str(ROOT))
+    SRC = [ROOT / d for d in ("backend", "database", "ml", "simulation")]   # Python package roots
+    sys.path[:0] = [str(p) for p in SRC]
+    os.environ["PYTHONPATH"] = os.pathsep.join([*map(str, SRC), os.environ.get("PYTHONPATH", "")])   # for subprocesses
 
     if not (ROOT / "data/raw/gtfs/stops.txt").exists():
         sh([PY, "data/fetch_data.py"])
@@ -56,17 +58,17 @@ def main():
     hist = query("SELECT COUNT(*) n FROM event WHERE run_id LIKE 'history-%'").n.iloc[0]
     if hist == 0:
         sh([PY, "-m", "twin.generate", "--days", "90"])
-    if not (ROOT / "models/lstm_v1.pt").exists():
+    if not (ROOT / "ml/models/lstm_v1.pt").exists():
         sh([PY, "-m", "predictor.evaluate"])
     if not (ROOT / "reports/impact_summary.json").exists():
         sh([PY, "-m", "advisory.impact"])
-    if not a.skip_web and not (ROOT / "web/dist/index.html").exists():
+    if not a.skip_web and not (ROOT / "frontend/dist/index.html").exists():
         npm = shutil.which("npm")
         if npm:
-            sh([npm, "ci" if (ROOT / "web/package-lock.json").exists() else "install"], cwd=ROOT / "web")
-            sh([npm, "run", "build"], cwd=ROOT / "web")
+            sh([npm, "ci" if (ROOT / "frontend/package-lock.json").exists() else "install"], cwd=ROOT / "frontend")
+            sh([npm, "run", "build"], cwd=ROOT / "frontend")
         else:
-            print("npm not found: API only (build web/ with `npm install && npm run build`).")
+            print("npm not found: API only (build frontend/ with `npm install && npm run build`).")
     env = dict(os.environ)
     if a.clock:
         env["DEMO_CLOCK_START"] = a.clock

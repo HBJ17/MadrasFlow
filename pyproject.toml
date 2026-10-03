@@ -17,4 +17,4 @@ camera = ["ultralytics>=8.1", "opencv-python>=4.9", "paho-mqtt>=2.0"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "backend", "database", "ml", "simulation"]

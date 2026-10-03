@@ -8,7 +8,9 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+SRC = [ROOT / d for d in ("backend", "database", "ml", "simulation")]   # Python package roots
+sys.path[:0] = [str(p) for p in SRC]
+os.environ["PYTHONPATH"] = os.pathsep.join([*map(str, SRC), os.environ.get("PYTHONPATH", "")])   # for subprocesses
 TEST_DB = ROOT / "data" / "test_transit.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB.as_posix()}"
 os.environ["DISABLE_SCHEDULER"] = "1"

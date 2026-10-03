@@ -23,7 +23,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from camera.counter import LineCounter, PersonTracker, frames, open_source
+from camera.counter import YOLO_WEIGHTS, LineCounter, PersonTracker, frames, open_source
 from common.config import REPORTS_DIR
 
 MATCH_S = 1.5
@@ -37,7 +37,7 @@ def _person_cutouts():
     from ultralytics import YOLO
     from ultralytics.utils import ASSETS
 
-    model = YOLO("yolov8n.pt")
+    model = YOLO(str(YOLO_WEIGHTS))
     crops = []
     for name in ("bus.jpg", "zidane.jpg"):
         img = cv2.imread(str(ASSETS / name))

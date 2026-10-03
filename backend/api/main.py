@@ -2,7 +2,7 @@
 
     uvicorn api.main:app --port 8000
 
-Set DISABLE_SCHEDULER=1 to skip the background jobs (tests). If web/dist exists, the built PWA
+Set DISABLE_SCHEDULER=1 to skip the background jobs (tests). If frontend/dist exists, the built PWA
 is served from / so one process runs the whole demo.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from api import routes_core, routes_ingest
 
 PREFIX = "/api/v1"
-WEB_DIST = Path(__file__).resolve().parents[1] / "web" / "dist"
+WEB_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 CACHED_READS = ("/occupancy", "/forecast", "/history", "/wait-or-go", "/vehicle")
 
 

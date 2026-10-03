@@ -1,6 +1,7 @@
 .venv
-web/node_modules
-web/dist
+frontend/node_modules
+frontend/dist
+web
 data/raw
 data/processed
 data/*.db*

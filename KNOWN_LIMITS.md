@@ -6,7 +6,7 @@ Requirements that are not fully met, and why. Nothing here was silently dropped.
 - **OpenStreetMap / Overpass** (inputs 2 and 12) was unreachable from the build machine (504 and
   connection resets on three public mirrors). Stop demand weights use the documented fallback
   (manual weights by stop type). `python data/fetch_data.py` retries and `--strict` makes it fatal;
-  if `data/raw/osm_poi.json` appears, `twin/network.py` uses POI counts automatically.
+  if `data/raw/osm_poi.json` appears, `simulation/twin/network.py` uses POI counts automatically.
 - **GTFS licence** of the community feed was not confirmed (the spec flags it as IIITD licence — check terms).
 - The feed's CMRL trips are schematic (first/last stop only), so metro timetables are hand-coded headways.
   MRTS is not in the feed at all; its station coordinates are approximate.
@@ -30,7 +30,7 @@ Requirements that are not fully met, and why. Nothing here was silently dropped.
 
 ## Twin
 - Commuters are lightweight records driven by a dispatcher process, not one SimPy process each
-  (`twin/agents.py` explains why: ~150k commuters/day must simulate in seconds). Behaviour follows
+  (`simulation/twin/agents.py` explains why: ~150k commuters/day must simulate in seconds). Behaviour follows
   the spec (FIFO boarding up to capacity, patience, refused-twice switching, transfers).
 - Truncated metro segments: through-passengers from beyond Saidapet/Ekkattuthangal appear as boardings
   at the boundary station rather than arriving already on board.

@@ -1,19 +1,19 @@
 # Stage 1: build the PWA
-FROM node:20-slim AS web
-WORKDIR /web
-COPY web/package.json web/package-lock.json ./
+FROM node:20-slim AS frontend
+WORKDIR /frontend
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
-COPY web/ ./
+COPY frontend/ ./
 RUN npm run build
 
-# Stage 2: API + twin + predictor
+# Stage 2: backend + database + ML + simulation
 FROM python:3.11-slim
 WORKDIR /app
-ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PYTHONPATH=/app/backend:/app/database:/app/ml:/app/simulation
 COPY requirements.txt .
 RUN pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 COPY . .
-COPY --from=web /web/dist ./web/dist
+COPY --from=frontend /frontend/dist ./frontend/dist
 EXPOSE 8000
 # Prepares data/DB/models on first start (cached in the data volume), then serves on :8000
 CMD ["python", "scripts/demo.py", "--host", "0.0.0.0", "--port", "8000", "--skip-web"]

@@ -4,6 +4,7 @@
 # but do not stop the chain, so all reports are refreshed).
 set -uo pipefail
 cd "$(dirname "$0")/.."
+export PYTHONPATH="backend:database:ml:simulation${PYTHONPATH:+:$PYTHONPATH}"
 PY="${PYTHON:-}"
 if [ -z "$PY" ]; then for c in .venv/Scripts/python .venv/bin/python python3 python; do
   if [ -x "$c" ] || command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi; done; fi

@@ -16,7 +16,7 @@ every downstream module is source-agnostic.
 | 2. Stop-by-stop occupancy indicators | `GET /occupancy/route/{id}` + crowd strip in the PWA |
 | 3. Multi-modal route recommendations | `routing/` — crowd-aware NetworkX graph, Fastest / Least crowded / Balanced |
 | 4. Depot-level frequency advisories | `advisory/` — detect → propose → verify with the twin (what-if) |
-| 5. Public web/mobile portal | `web/` — React PWA, low-bandwidth by default, English + Tamil, offline cache |
+| 5. Public web/mobile portal | `frontend/` — React PWA, low-bandwidth by default, English + Tamil, offline cache |
 
 ## Quick start
 
@@ -52,11 +52,11 @@ Docker alternative: `docker compose up --build` (first start prepares data insid
 | 3–4 | `python -m twin.simulate --start 2026-09-30 --days 1` | one corridor-day in ~15 s; scenarios via `--scenario rain_heavy` … |
 | 5 | `python -m twin.calibrate` then `python -m twin.validate` | `config/demand_fitted.yaml`, `reports/twin_validation.md` |
 | 6 | `python -m twin.generate --days 90 --verify` | 90 days in ~90 s on 16 cores, parquet + DB, same seed ⇒ identical |
-| 7 | `python -m predictor.evaluate` | `models/lstm_v1.pt`, `models/prophet_v1.pkl`, `reports/forecast_eval.md` |
+| 7 | `python -m predictor.evaluate` | `ml/models/lstm_v1.pt`, `ml/models/prophet_v1.pkl`, `reports/forecast_eval.md` |
 | 8 | `python -m predictor.serve` (also every 5 min in the API) | rows in `forecast`; `/occupancy/*`, `/forecast`, `/history`, `/wait-or-go` |
 | 9 | `POST /api/v1/plan/window` (`/plan` for a single time) | ranked itineraries for every 15-min slot in depart ± window, with filters (modes, walk, fare, transfers, step-free, women's travel) and ranking (crowd + arrival by default); `GET /stops/nearest` turns GPS into a stop |
 | 10 | `python -m advisory.headway`, `python -m advisory.impact` | add-trips advisories verified by twin what-if, plus short-turn, move-a-bus and hold-for-train rules; `GET /fleet/heatmap[/{route}?view=stops\|buses]`; `POST /twin/run` with `scenario: builder`; `reports/impact_summary.md` |
-| 11–12 | `cd web && npm install && npm run build` | PWA in `web/dist` (served by FastAPI) |
+| 11–12 | `cd frontend && npm install && npm run build` | PWA in `frontend/dist` (served by FastAPI) |
 | 13 | `python -m camera.vehicle_node …`, `python -m camera.accuracy` | counts posted to `/ingest/events`; `reports/camera_accuracy.md` |
 
 After changing a model or config, `bash scripts/rebuild_all.sh` re-runs calibration → seed →
@@ -80,7 +80,7 @@ GTFS + weather + holidays + events          camera nodes (stop, vehicle) — cou
             │                                         ├─► routing/    crowd-aware multimodal graph
      advisory/ ◄──────────── forecast ────────────────┘   advisory/   detect → propose → verify
                                                       ▼
-                                FastAPI /api/v1  ──►  web/ commuter PWA  +  /depot dashboard
+                                FastAPI /api/v1  ──►  frontend/ commuter PWA  +  /depot dashboard
 ```
 
 - **Twin** (`twin/`): vehicles are SimPy processes running the GTFS timetable (or headway profiles);
@@ -95,7 +95,7 @@ GTFS + weather + holidays + events          camera nodes (stop, vehicle) — cou
   the demand load factor `(onboard + left behind) / capacity`. The LSTM sees 6 h of history and
   predicts 3 h (12 slots) as q10/q50/q90. The API only reads forecast rows; models never run inside
   a request.
-- **Trip planner** (`routing/window.py`, `/plan`): from the user's location (nearest stop) or a typed stop, every
+- **Trip planner** (`backend/routing/window.py`, `/plan`): from the user's location (nearest stop) or a typed stop, every
   15-minute departure in a ± window is planned; results show one card per slot with ranked routes (crowd level,
   arrival, fare, transfers, walking) and the chosen route on a crowd-coloured map. Filters and ranking criteria
   re-plan automatically; accessibility and fare-concession rules are in `config/accessibility.yaml`.
@@ -110,7 +110,8 @@ GTFS + weather + holidays + events          camera nodes (stop, vehicle) — cou
 ## Camera demo
 
 ```bash
-.venv/Scripts/python -m pip install -r requirements-camera.txt
+.venv/Scripts/python -m pip install -r ml/camera/requirements.txt
+export PYTHONPATH=backend:database:ml:simulation
 .venv/Scripts/python -m camera.stop_node --source 0 --stop-id MRTS_VLCY --show
 .venv/Scripts/python -m camera.vehicle_node --source 0 --vehicle-id DEMO-V1 --route-id MRTS_BV --direction 1 --stops MRTS_VLCY,MRTS_PRGD,MRTS_TRMN --show
 ```
@@ -153,20 +154,36 @@ npx lighthouse@11.7.1 http://localhost:8000/ --form-factor=mobile --only-categor
 
 See `KNOWN_LIMITS.md` for what is not done or not met.
 
-## Repository layout
+## Project structure
 
 ```
-config/      corridor.yaml, demand.yaml, demand_fitted.yaml, calibration_targets.yaml, scenarios.yaml, predictor.yaml
-data/        fetch_data.py, events.csv, raw/ (not committed), processed/
-db/          schema.sql, seed.py, database.py
-twin/        network.py, paths.py, demand.py, agents.py, scenarios.py, simulate.py, calibrate.py, validate.py, generate.py, stream.py
-predictor/   features.py, baseline.py, lstm.py, live_correction.py, evaluate.py, serve.py
-routing/     graph.py, recommend.py
-advisory/    headway.py, whatif.py, impact.py
-api/         main.py, models.py, routes_*.py, live.py, jobs.py
-camera/      counter.py, stop_node.py, vehicle_node.py, client.py, accuracy.py
-web/         Vite + React + TypeScript PWA (commuter at /, depot at /depot)
-scripts/     demo.py, smoke.py, smoke.sh
-tests/       pytest suites
-reports/     generated reports and figures
+transit-twin/
+├── frontend/          React + Vite + TypeScript PWA (commuter app at /, depot dashboard at /depot)
+├── backend/
+│   ├── api/           FastAPI app: main.py, models.py, routes_*.py, live.py, jobs.py
+│   ├── routing/       trip planner: graph.py, recommend.py, window.py, filters.py, ranking.py
+│   ├── advisory/      depot advisories, what-if and impact: headway.py, rules.py, whatif.py, impact.py
+│   └── common/        shared config loader and clock
+├── database/
+│   └── db/            schema.sql, seed.py, database.py
+├── ml/
+│   ├── predictor/     crowd forecasting: features, Prophet baseline, LSTM, live correction, evaluation
+│   ├── camera/        YOLOv8n people counter (stop and vehicle nodes) + its requirements.txt
+│   └── models/        trained weights: lstm_v1.pt, prophet_v1.pkl, yolov8n.pt (generated, not committed)
+├── simulation/
+│   └── twin/          digital twin: network, demand, agents, scenarios, simulate, calibrate, validate
+├── config/            YAML settings (corridor, demand, scenarios, predictor, accessibility)
+├── data/              fetch_data.py, events.csv, raw/ and processed/ (generated, not committed)
+├── scripts/           demo.py, smoke.py, rebuild_all.sh
+├── tests/             pytest suites
+├── docs/              demo script
+└── reports/           generated reports and figures
+```
+
+Python packages keep short names (`api`, `routing`, `db`, `predictor`, `twin`, ...); their parent folders
+`backend/`, `database/`, `ml/` and `simulation/` are on `PYTHONPATH`. Docker, the Makefile, the scripts and
+pytest set it for you; to run a module by hand, set it first:
+
+```bash
+export PYTHONPATH=backend:database:ml:simulation
 ```

@@ -26,7 +26,9 @@ os.environ.update({
     "DISABLE_SCHEDULER": "1",
     "CAMERA_API_KEY": "smoke-key",
 })
-sys.path.insert(0, str(ROOT))
+SRC = [ROOT / d for d in ("backend", "database", "ml", "simulation")]   # Python package roots
+sys.path[:0] = [str(p) for p in SRC]
+os.environ["PYTHONPATH"] = os.pathsep.join([*map(str, SRC), os.environ.get("PYTHONPATH", "")])   # for subprocesses
 FAIL: list[str] = []
 
 

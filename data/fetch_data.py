@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
 import sys
 import zipfile
 from datetime import date, timedelta
@@ -20,7 +21,9 @@ import pandas as pd
 import requests
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+SRC = [ROOT / d for d in ("backend", "database", "ml", "simulation")]   # Python package roots
+sys.path[:0] = [str(p) for p in SRC]
+os.environ["PYTHONPATH"] = os.pathsep.join([*map(str, SRC), os.environ.get("PYTHONPATH", "")])   # for subprocesses
 from common.config import RAW_DIR  # noqa: E402
 
 GTFS_URL = "https://raw.githubusercontent.com/ungalsoththu/ChennaiGTFS/main/data/chennai-unified-gtfs.zip"

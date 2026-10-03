@@ -312,7 +312,7 @@ def load_network() -> Network:
     from common.config import PROCESSED_DIR
 
     cache = PROCESSED_DIR / "network.pkl"
-    cfg_mtime = max(p.stat().st_mtime for p in (Path(__file__).parents[1] / "config").glob("*.yaml"))
+    cfg_mtime = max(p.stat().st_mtime for p in (Path(__file__).parents[2] / "config").glob("*.yaml"))
     if cache.exists() and cache.stat().st_mtime > max(cfg_mtime, Path(__file__).stat().st_mtime):
         return pd.read_pickle(cache)
     net = build_network()
