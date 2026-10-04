@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { hhmm, levelOf, postJSON, usePolling, type DataSource } from '../../api'
 import { LevelChip, SimBadge } from '../../components'
-import { Panel } from './ui'
+import { ACCEPTED_EVENT, Panel, type EffectStatus } from './ui'
 
 type Kind = 'add_trips' | 'short_turn' | 'move_bus' | 'hold_for_train'
 interface Advisory {
@@ -16,14 +16,21 @@ const KIND: Record<Kind, { label: string; icon: string; check: string }> = {
   add_trips: { label: 'Add trips', icon: '➕', check: 'Tested in the twin' },
   short_turn: { label: 'Short-turn', icon: '↩', check: 'Same capacity as the twin-tested extra trips, on the crowded section only' },
   move_bus: { label: 'Move a bus', icon: '⇄', check: 'Estimated from the forecast; the quiet route stays below the figure shown' },
-  hold_for_train: { label: 'Hold for train', icon: '⏸', check: 'Estimate: not tested in the twin' },
+  hold_for_train: { label: 'Hold for train', icon: '⏸', check: 'Estimate: tested in the twin once accepted' },
 }
 
 export default function Advisories() {
-  const a = usePolling<{ advisories: Advisory[]; data_source: DataSource }>('/advisories?status=active,accepted,rejected_by_whatif', 30_000)
+  const a = usePolling<{ advisories: Advisory[]; data_source: DataSource }>('/advisories?status=active,accepted,rejected_by_whatif&current=true', 30_000)
+  const eff = usePolling<EffectStatus>('/fleet/effect', 5_000)
   const [busy, setBusy] = useState(false)
   const [show, setShow] = useState<Kind | 'all'>('all')
-  const act = async (id: number, action: 'accept' | 'dismiss') => { await postJSON(`/advisories/${id}/${action}`, {}); a.reload() }
+  const act = async (id: number, action: 'accept' | 'dismiss' | 'undo') => {
+    await postJSON(`/advisories/${id}/${action}`, {})
+    a.reload(); eff.reload()
+    if (action !== 'dismiss') window.dispatchEvent(new CustomEvent(ACCEPTED_EVENT, { detail: action }))
+  }
+  const e = eff.data
+  const tested = (id: number) => (e?.status === 'ready' ? e.summary?.per_advisory.find((p) => p.advisory_id === id) : undefined)
   const runNow = async () => { setBusy(true); try { await postJSON('/advisories/run', {}) } finally { setBusy(false); a.reload() } }
   const all = (a.data?.advisories ?? []).map((x) => ({ ...x, kind: (x.kind ?? 'add_trips') as Kind }))
   const list = show === 'all' ? all : all.filter((x) => x.kind === show)
@@ -71,10 +78,15 @@ export default function Advisories() {
                 <span className="text-xs text-slate-600 dark:text-slate-400">· {x.extra_vehicle_hours ? `+${x.extra_vehicle_hours} bus-hours` : 'no extra bus-hours'}</span>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400">{k.check}</p>
+              {x.status === 'accepted' ? <Applied t={tested(x.advisory_id)} computing={e?.status === 'computing'} /> : null}
               {x.status === 'active' ? (
                 <div className="flex gap-2 pt-1">
                   <button className="btn-primary text-sm" onClick={() => act(x.advisory_id, 'accept')}>Accept</button>
                   <button className="btn-ghost text-sm" onClick={() => act(x.advisory_id, 'dismiss')}>Dismiss</button>
+                </div>
+              ) : x.status === 'accepted' ? (
+                <div className="flex gap-2 pt-1">
+                  <button className="btn-ghost text-sm" onClick={() => act(x.advisory_id, 'undo')}>Undo</button>
                 </div>
               ) : null}
             </li>
@@ -82,5 +94,20 @@ export default function Advisories() {
         })}
       </ul>
     </Panel>
+  )
+}
+
+// What the accepted card does once tested with all accepted changes in the twin; shown on the heatmap too.
+function Applied({ t, computing }: { t?: { lf_before?: number | null; lf_after?: number | null; skipped?: boolean }; computing: boolean }) {
+  if (computing) return <p className="text-sm text-amber-700 dark:text-amber-300" role="status">Testing with the other accepted changes in the twin…</p>
+  if (!t) return null
+  if (t.skipped) return <p className="text-sm text-slate-600 dark:text-slate-400">Could not be tested in the twin; not shown on the heatmap.</p>
+  return (
+    <p className="flex flex-wrap items-center gap-2 text-sm">
+      <span className="font-medium">Applied in the twin (with all accepted changes):</span>
+      {t.lf_before != null ? <LevelChip level={levelOf(t.lf_before)} lf={t.lf_before} size="md" /> : null}
+      {t.lf_after != null ? <>→ <LevelChip level={levelOf(t.lf_after)} lf={t.lf_after} size="md" /></> : null}
+      <span className="text-xs text-slate-600 dark:text-slate-400">peak load in the window, measured as above · see "With accepted changes" on the heatmap</span>
+    </p>
   )
 }
