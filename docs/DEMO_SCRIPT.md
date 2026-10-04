@@ -28,16 +28,17 @@ feed the same pipeline."
 1. **Fleet heatmap**: routes × next 3 hours. Click *95 → Thiruvanmiyur*: **By stop** shows where along the
    route it fills; **By bus** shows each scheduled bus filling up stop by stop.
 2. **Recommendations**: filter by kind. An *Add trips* card is twin-tested (before → after); a *Short-turn*
-   or *Hold for train* (Guindy) card explains why it was suggested and that it is an estimate. Accept one.
+   or *Hold for train* (Guindy) card explains why it was suggested and that it is an estimate. Accept one:
+   the twin re-runs the day with every accepted change (~1 min), the heatmap switches to *With accepted
+   changes* — the outlined cells are the ones that changed (hover for the value before) — and the bar above
+   it gives the day's left-behind and crowded-stop totals before → after. *Undo* on the card takes it back.
 3. **What-if simulator**: tap *Peak boost on 95* (fleet only) → Run (~40 s) → the difference heatmap and
    the cost in bus-hours; *Save to compare*. Clear the fleet, tap *Monsoon morning* (conditions only) → Run
    → Save. The saved-plans table compares the two. Then try *Cyclone day* together with extra buses.
-4. **Impact**: computed reduction in CROWDED vehicle-stops and left-behind passengers if advisories are
-   followed, and the extra bus-hours it costs.
 
 ## 4. Cameras (1 min)
 Run the vehicle node on a laptop webcam; walk a few people across the line; press Enter to "depart"
-the stop. The **Data health** panel shows `+3 −1 → 2 on board` within seconds. "Only counts leave the
+the stop. `/api/v1/health` lists it under `camera_recent` (`+3 −1 → 2 on board`) within seconds. "Only counts leave the
 device. No images are stored or sent."
 
 ## 5. Honesty slide (30 s)

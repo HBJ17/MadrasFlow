@@ -100,7 +100,9 @@ GTFS + weather + holidays + events          camera nodes (stop, vehicle) — cou
   arrival, fare, transfers, walking) and the chosen route on a crowd-coloured map. Filters and ranking criteria
   re-plan automatically; accessibility and fare-concession rules are in `config/accessibility.yaml`.
 - **Depot tools** (`/depot`): fleet heatmap with drill-down by stop and by bus; recommendations read from the
-  heatmap (add trips, short-turn, move a bus, hold for train); a what-if simulator whose conditions panel (day,
+  heatmap (add trips, short-turn, move a bus, hold for train); accepting one tests all accepted changes
+  together in the twin and the heatmap's *With accepted changes* view shows the result (changed cells
+  outlined, Undo on the card); a what-if simulator whose conditions panel (day,
   weather, events, disruptions, demand) and fleet plan panel (extra buses per route and hour) can run alone or
   together, with before / after / difference heatmaps and saved plans to compare.
 - **Camera pipeline**: YOLOv8n + ByteTrack, a counting line at the door (vehicle node) and a waiting
@@ -117,8 +119,8 @@ export PYTHONPATH=backend:database:ml:simulation
 ```
 
 Walk people across the vertical line in the vehicle node's preview, then press Enter in its terminal
-to "depart" the next stop; the counts appear in the depot dashboard's Data health panel within a
-couple of seconds (it polls every 2 s). Set `CAMERA_API_KEY` on both the API and the nodes (default
+to "depart" the next stop; the counts appear under `camera_recent` in `GET /api/v1/health` within a
+couple of seconds. Set `CAMERA_API_KEY` on both the API and the nodes (default
 `dev-key` is for local demos only). Nodes buffer to SQLite when offline and retry with back-off.
 
 **Privacy:** frames are processed in memory and discarded; only counts leave the device. No images
