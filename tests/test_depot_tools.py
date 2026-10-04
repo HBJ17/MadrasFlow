@@ -88,3 +88,29 @@ def test_builder_plan_validation(client):
     assert client.post("/api/v1/twin/run", json={"scenario": "builder", "mods": {}}).status_code == 400
     assert client.post("/api/v1/twin/run", json={"scenario": "builder", "mods": {"weather": "snow"}}).status_code == 422
     assert client.post("/api/v1/twin/run", json={"scenario": "builder", "mods": {"fleet": [{"route": "BUS_95", "hour": 2, "buses": 1}]}}).status_code == 422
+
+
+def test_accepted_advisories_become_twin_modifications(seeded_db):
+    import json
+
+    from advisory.effect import modifications
+
+    w = {"slot_start": iso(pd.Timestamp("2026-09-15 08:30", tz=IST)), "slot_end": iso(pd.Timestamp("2026-09-15 10:00", tz=IST)),
+         "action": "", "extra_trips": 2, "direction": 0}
+    adv = pd.DataFrame([
+        {**w, "advisory_id": 1, "kind": "add_trips", "route_id": "BUS_95", "params": json.dumps({"start": "08:15", "end": "10:00", "n": 2})},
+        {**w, "advisory_id": 2, "kind": "short_turn", "route_id": "BUS_95", "params": json.dumps({"start": "08:15", "end": "10:00", "n": 2, "turn_idx": 6})},
+        {**w, "advisory_id": 3, "kind": "move_bus", "route_id": "BUS_M70", "params": json.dumps({"start": "08:15", "end": "10:00", "n": 1, "donor": "BUS_51R"})},
+        {**w, "advisory_id": 4, "kind": "hold_for_train", "route_id": "BUS_S97", "params": json.dumps({"stop_id": "X", "start": "08:30", "end": "10:00", "min": 2})},
+        {**w, "advisory_id": 5, "kind": "add_trips", "route_id": "BUS_95", "params": None},       # legacy row: read from its fields
+        {**w, "advisory_id": 6, "kind": "short_turn", "route_id": "BUS_95", "params": None, "action": "run 2 short trips A → Nowhere"},
+    ])
+    mods, windows, skipped = modifications(adv)
+    xt = mods["extra_trips"]
+    assert [x.get("turn_idx") for x in xt if x["route"] == "BUS_95"] == [None, 6, None]
+    assert {"route": "BUS_M70", "direction": None, "start": "08:15", "end": "10:00", "n": 1} in xt
+    assert mods["remove_trips"] == [{"route": "BUS_51R", "start": "08:15", "end": "10:00", "n": 1}]
+    assert mods["holds"][0]["stop_id"] == "X"
+    assert xt[-1] == {"route": "BUS_95", "direction": 0, "start": "08:15", "end": "10:00", "n": 2}
+    assert skipped == [6]
+    assert set(windows) == {("BUS_95", 0), ("BUS_M70", 0), ("BUS_M70", 1), ("BUS_51R", 0), ("BUS_51R", 1), ("BUS_S97", 0)}

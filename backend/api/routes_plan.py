@@ -35,8 +35,15 @@ async def plan_window(req: PlanWindowRequest):
 
 @router.get("/advisories")
 def advisories(depot: str | None = None, route_id: str | None = None, status: str | None = "active,accepted",
-               limit: int = 50):
+               current: bool = False, limit: int = 50):
+    """current=true leaves out advisories whose window has already ended."""
     cond, p = [], {"lim": limit}
+    if current:
+        from common import clock
+        from common.config import iso
+
+        cond.append("slot_end > :now")
+        p["now"] = iso(clock.now())
     if depot:
         cond.append("depot = :depot")
         p["depot"] = depot
@@ -57,13 +64,21 @@ def advisories(depot: str | None = None, route_id: str | None = None, status: st
 
 @router.post("/advisories/{advisory_id}/{action}")
 def advisory_action(advisory_id: int, action: str):
-    if action not in ("accept", "dismiss"):
-        raise HTTPException(400, "action must be accept or dismiss")
-    if not len(query("SELECT 1 FROM advisory WHERE advisory_id = :i", {"i": advisory_id})):
+    """accept | dismiss | undo (an accepted advisory goes back to active). Accepting or undoing re-runs
+    the twin with all accepted advisories in the background (GET /fleet/effect shows progress)."""
+    if action not in ("accept", "dismiss", "undo"):
+        raise HTTPException(400, "action must be accept, dismiss or undo")
+    row = query("SELECT status FROM advisory WHERE advisory_id = :i", {"i": advisory_id})
+    if not len(row):
         raise HTTPException(404, "no such advisory")
-    execute("UPDATE advisory SET status = :s WHERE advisory_id = :i",
-            {"s": "accepted" if action == "accept" else "dismissed", "i": advisory_id})
-    return {"ok": True, "advisory_id": advisory_id, "status": "accepted" if action == "accept" else "dismissed"}
+    if action == "undo" and row.status.iloc[0] != "accepted":
+        raise HTTPException(400, "only an accepted advisory can be undone")
+    status = {"accept": "accepted", "dismiss": "dismissed", "undo": "active"}[action]
+    execute("UPDATE advisory SET status = :s WHERE advisory_id = :i", {"s": status, "i": advisory_id})
+    from advisory.effect import ensure_current
+
+    ensure_current()
+    return {"ok": True, "advisory_id": advisory_id, "status": status}
 
 
 @router.post("/advisories/run")
