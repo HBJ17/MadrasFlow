@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import math
+import threading
 
 import numpy as np
 import pandas as pd
@@ -28,6 +29,8 @@ from db.database import engine, execute, query
 TARGET_LF = 0.85
 MIN_SLOTS = 2
 MAX_EXTRA_PER_HOUR = 6
+# the scheduler and the dashboard's "Read heatmap now" take turns, so a window is never proposed twice
+_run_lock = threading.Lock()
 
 
 def latest_lstm() -> pd.DataFrame:
@@ -88,6 +91,11 @@ def propose(w: dict) -> dict:
 
 
 def run_advisories(now: pd.Timestamp | None = None, seed: int = 7, verify: bool = True) -> list[dict]:
+    with _run_lock:
+        return _run(now, seed, verify)
+
+
+def _run(now: pd.Timestamp | None, seed: int, verify: bool) -> list[dict]:
     now = pd.Timestamp(now or clock.now()).tz_convert(IST)
     depots = {r["route_id"]: r.get("depot") for r in corridor()["routes"]}
     out = []
@@ -133,6 +141,7 @@ def run_advisories(now: pd.Timestamp | None = None, seed: int = 7, verify: bool 
             "extra_trips": int(n), "expected_lf_before": lf_before, "expected_lf_after": lf_after,
             "neighbour_lf_after": nb_after, "extra_vehicle_hours": veh_hours, "status": status,
             "data_source": w["data_source"], "kind": "add_trips",
+            "params": json.dumps({"start": start, "end": end, "n": int(n)}),
         }
         rows = [rec]
         ctx = {**rec, "_start": start, "_end": end, "_cycle_min": rt * 2 + 20}

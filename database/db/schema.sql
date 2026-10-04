@@ -104,7 +104,15 @@ CREATE TABLE IF NOT EXISTS advisory (
   direction INT, neighbour_lf_after REAL, extra_vehicle_hours REAL,
   status TEXT DEFAULT 'active' CHECK (status IN ('active','accepted','dismissed','rejected_by_whatif')),
   data_source TEXT,
-  kind TEXT DEFAULT 'add_trips'       -- add_trips | short_turn | move_bus | hold_for_train
+  kind TEXT DEFAULT 'add_trips',      -- add_trips | short_turn | move_bus | hold_for_train
+  params TEXT                         -- JSON: what to run in the twin when the advisory is accepted
+);
+
+-- Twin-tested effect of all accepted advisories together, per route x stop x 15-min slot
+-- (shown on the heatmap as "with accepted changes"; replaced whenever the accepted set changes)
+CREATE TABLE IF NOT EXISTS advisory_effect (
+  computed_at TIMESTAMP, advisory_ids TEXT, route_id TEXT, direction INT, stop_id TEXT,
+  target_slot TIMESTAMP, lf_before REAL, lf_after REAL
 );
 
 -- Twin runs and unmet demand (logged separately for the pitch)

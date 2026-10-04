@@ -48,7 +48,7 @@ def init_schema(drop: bool = False) -> None:
             for v in ("v_event_labelled", "v_stop_slot", "v_route_stop_slot"):
                 c.exec_driver_sql(f"DROP VIEW IF EXISTS {v}")
             for t in ("stop", "route", "route_stop", "trip", "event", "camera_raw", "node_heartbeat", "weather_hourly",
-                      "calendar_day", "city_event", "forecast", "advisory", "twin_run", "unmet_demand"):
+                      "calendar_day", "city_event", "forecast", "advisory", "advisory_effect", "twin_run", "unmet_demand"):
                 c.exec_driver_sql(f"DROP TABLE IF EXISTS {t}")
         raw = c.connection.dbapi_connection if hasattr(c.connection, "dbapi_connection") else c.connection
         if eng.url.get_backend_name() == "sqlite":
@@ -61,7 +61,7 @@ def init_schema(drop: bool = False) -> None:
 
 
 # Columns added after the first release; init_schema/migrate add them to an existing database.
-ADDED_COLUMNS = {"advisory": {"kind": "TEXT DEFAULT 'add_trips'"}}
+ADDED_COLUMNS = {"advisory": {"kind": "TEXT DEFAULT 'add_trips'", "params": "TEXT"}}
 
 
 def migrate() -> None:
@@ -69,6 +69,9 @@ def migrate() -> None:
     if eng.url.get_backend_name() != "sqlite":
         return
     with eng.begin() as c:
+        # new tables: every statement in the schema is IF NOT EXISTS
+        raw = c.connection.dbapi_connection if hasattr(c.connection, "dbapi_connection") else c.connection
+        raw.executescript(SCHEMA.read_text(encoding="utf8"))
         for table, cols in ADDED_COLUMNS.items():
             have = {r[1] for r in c.exec_driver_sql(f"PRAGMA table_info({table})").fetchall()}
             if not have:

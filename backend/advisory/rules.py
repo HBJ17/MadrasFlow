@@ -12,6 +12,7 @@ the twin-tested extra trips, so it reuses that result; a moved bus is estimated 
 """
 from __future__ import annotations
 
+import json
 import math
 
 import pandas as pd
@@ -62,7 +63,8 @@ def short_turn(fc: pd.DataFrame, w: dict, base: dict) -> dict | None:
             "action": f"run {n} short trip{'s' if n > 1 else ''} {st.name.iloc[0]} → {st.name.iloc[turn]} "
                       f"between {base['_start']} and {base['_end']} instead of full trips",
             "extra_vehicle_hours": round((base["extra_vehicle_hours"] or 0) * share, 1),
-            "neighbour_lf_after": None, "route_id": r.route_id}
+            "neighbour_lf_after": None, "route_id": r.route_id,
+            "params": json.dumps({"start": base["_start"], "end": base["_end"], "n": int(n), "turn_idx": int(turn)})}
 
 
 def move_bus(fc: pd.DataFrame, w: dict, base: dict) -> dict | None:
@@ -87,12 +89,14 @@ def move_bus(fc: pd.DataFrame, w: dict, base: dict) -> dict | None:
                   {"r": donor.route_id, "a": iso(w["start"]), "b": iso(w["end"])}).n.iloc[0]
     donor_after = peak * sched / max(sched - 1, 1) if sched > 1 else None
     hours = (w["end"] - w["start"]).total_seconds() / 3600
+    n = max(1, math.floor(hours * 60 / max(base.get('_cycle_min', 60), 1)))
     return {**base, "kind": "move_bus",
             "reason": f"forecast LF {w['peak_lf']:.2f} on {target.short_name} at {w['peak_stop']} while "
                       f"{donor.short_name} ({donor.depot} depot) stays at or below {peak:.0%}",
             "action": f"move 1 bus from {donor.short_name} to {target.short_name} between {base['_start']} and {base['_end']}",
-            "extra_trips": max(1, math.floor(hours * 60 / max(base.get('_cycle_min', 60), 1))),
-            "extra_vehicle_hours": 0.0, "neighbour_lf_after": None if donor_after is None else round(donor_after, 3)}
+            "extra_trips": n, "extra_vehicle_hours": 0.0,
+            "neighbour_lf_after": None if donor_after is None else round(donor_after, 3),
+            "params": json.dumps({"start": base["_start"], "end": base["_end"], "n": n, "donor": donor.route_id})}
 
 
 def hold_for_train(fc: pd.DataFrame, now: pd.Timestamp, depots: dict) -> list[dict]:
@@ -132,5 +136,7 @@ def hold_for_train(fc: pd.DataFrame, now: pd.Timestamp, depots: dict) -> list[di
                                   f"between {a.tz_convert(IST):%H:%M} and {b.tz_convert(IST):%H:%M}",
                         "extra_trips": 0, "expected_lf_before": round(top, 3), "expected_lf_after": None,
                         "neighbour_lf_after": None, "extra_vehicle_hours": 0.0, "status": "active",
-                        "data_source": g.data_source.iloc[0]})
+                        "data_source": g.data_source.iloc[0],
+                        "params": json.dumps({"stop_id": stop, "start": f"{a.tz_convert(IST):%H:%M}",
+                                              "end": f"{b.tz_convert(IST):%H:%M}", "min": HOLD_MIN})})
     return out
