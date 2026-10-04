@@ -26,7 +26,9 @@ class Scenario:
     stop_type_mult: dict = field(default_factory=dict)
     surges: list = field(default_factory=list)       # {station, from_min, to_min, factor, kind}
     headway_changes: list = field(default_factory=list)  # {modes, from_min, to_min, mult}; mult=inf suspends
-    extra_trips: list = field(default_factory=list)  # {route, direction, start, end, n}
+    extra_trips: list = field(default_factory=list)  # {route, direction, start, end, n, turn_idx?}
+    remove_trips: list = field(default_factory=list)  # {route, start, end, n}: n trips per direction taken off
+    holds: list = field(default_factory=list)         # {route, direction, stop_id, start, end, min}
     tags: list = field(default_factory=list)
 
     @property
@@ -155,6 +157,10 @@ def resolve(scenario_id: str, ctx, net, dcfg: dict, mods: dict | None = None, us
         _apply_builder(s, sc, cfg, dcfg, add_event, net)
     if sc.get("extra_trips"):
         s.extra_trips = s.extra_trips + list(sc["extra_trips"])
+    if sc.get("remove_trips"):
+        s.remove_trips = s.remove_trips + list(sc["remove_trips"])
+    if sc.get("holds"):
+        s.holds = s.holds + list(sc["holds"])
     if scenario_id == "custom":
         for k in ("demand_mult", "dispatch_delay_mult", "stop_type_mult"):
             if k in sc:

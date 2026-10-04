@@ -86,15 +86,30 @@ class TwinSim:
                     drop = idx[(i > 0) & (np.floor(i / mult) == np.floor((i - 1) / mult))]
                 keep[tt.index.get_indexer(drop)] = False
             tt = tt[keep]
+        for x in self.scen.remove_trips:  # a bus moved away: take n evenly spread trips per direction off
+            a, b = hhmm_to_min(x["start"]), hhmm_to_min(x["end"])
+            drop = []
+            for _, g in tt[(tt.route_id == x["route"]) & tt.start_min.between(a, b)].groupby("direction"):
+                idx = g.sort_values("start_min").index
+                n = min(int(x["n"]), len(idx) - 1)
+                if n > 0:
+                    drop += list(idx[np.linspace(0, len(idx) - 1, n + 2)[1:-1].round().astype(int)])
+            tt = tt.drop(index=drop)
+        tt["turn_idx"] = -1
         rows = []
         for x in self.scen.extra_trips:
             dirs = [x["direction"]] if x.get("direction") is not None else [0, 1]
             a, b = hhmm_to_min(x["start"]), hhmm_to_min(x["end"])
             for d in dirs:
                 for j in range(int(x["n"])):
-                    rows.append({"route_id": x["route"], "direction": d, "start_min": a + (b - a) * (j + 0.5) / x["n"], "extra": True})
+                    rows.append({"route_id": x["route"], "direction": d, "start_min": a + (b - a) * (j + 0.5) / x["n"], "extra": True,
+                                 "turn_idx": int(x.get("turn_idx", -1))})
         if rows:
             tt = pd.concat([tt, pd.DataFrame(rows)], ignore_index=True)
+        self.holds = defaultdict(list)    # (route, dir, stop_id) -> [(from_min, to_min, hold_min)]
+        for h in self.scen.holds:
+            self.holds[(h["route"], int(h["direction"]), h["stop_id"])].append(
+                (hhmm_to_min(h["start"]), hhmm_to_min(h["end"]), float(h["min"])))
         tt = tt.sort_values("start_min").reset_index(drop=True)
         tt["trip_id"] = [f"{r}_{d}_{self.ctx.date:%Y%m%d}_{int(m):04d}{'x' if e else ''}{i}"
                          for i, (r, d, m, e) in enumerate(zip(tt.route_id, tt.direction, tt.start_min, tt.extra))]
@@ -235,11 +250,16 @@ class TwinSim:
         yield self.env.timeout(max(0.0, trip.start_min + delay - self.env.now))
         onboard: dict[int, list] = defaultdict(list)
         load = 0
-        last = len(seqs) - 1
-        for i in range(len(seqs)):
+        # a short-turn trip ends at turn_idx and only takes passengers going no further
+        last = len(seqs) - 1 if trip.turn_idx < 0 else min(int(trip.turn_idx), len(seqs) - 1)
+        for i in range(last + 1):
             if i > 0:
                 f = self.scen.run_time_mult * (self._traffic(self.env.now) if mode == "bus" else 1.0)
                 yield self.env.timeout(run[i] * f * self.rng.lognormal(0, sigma))
+            for a, b, hold in self.holds.get((r, d, stops[i]), ()):  # wait for the train before boarding
+                if a <= self.env.now < b:
+                    yield self.env.timeout(hold)
+                    break
             now = self.env.now
             seq = int(seqs[i])
             alight = onboard.pop(seq, [])
@@ -270,13 +290,24 @@ class TwinSim:
                             stay.append(cid)
                     q.waiting = stay
                 space = cap - load
-                while q.waiting and space > 0:
-                    boarders.append(q.waiting.popleft())
-                    space -= 1
-                refused = len(q.waiting)
+                # a short-turn trip only takes people getting off by the turn; the rest wait for a full trip
+                fits = (lambda cid: True) if last == len(seqs) - 1 else \
+                    (lambda cid, e=seqs[last]: self.c_opt[cid].legs[self.c_leg[cid]].alight_seq <= e)
+                stay = deque()
+                for cid in q.waiting:
+                    if space > 0 and fits(cid):
+                        boarders.append(cid)
+                        space -= 1
+                    else:
+                        stay.append(cid)
+                q.waiting = stay
+                refused = sum(1 for cid in q.waiting if fits(cid))
                 if refused:
                     stay = deque()
                     for cid in q.waiting:
+                        if not fits(cid):
+                            stay.append(cid)
+                            continue
                         self.c_ref[cid] += 1
                         if self.c_ref[cid] >= 2:
                             self._give_up(cid, now, stops[i], r, "refused_twice")
